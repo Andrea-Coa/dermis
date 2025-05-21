@@ -25,3 +25,4 @@ Desarrollar un producto de datos que permita identificar imperfecciones cutánea
 5. **Evaluar la cobertura de imperfecciones tratables**: verificar si los productos disponibles en la base pueden abordar adecuadamente las imperfecciones más comunes detectadas.
 
 ---
+La data utilizada para el EDA, se puede encontrar en este drive https://drive.google.com/drive/folders/108uniNHXUsphg3Wv_l5kBHt06mjvnzr0?usp=sharing
