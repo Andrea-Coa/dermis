@@ -1,1 +1,6 @@
 .venv
+lib
+temp
+fichas-tecnicas
+ingredients
+urls
