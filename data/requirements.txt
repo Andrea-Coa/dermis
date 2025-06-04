@@ -1,0 +1,9 @@
+ipykernel
+numpy
+pandas
+spacy
+matplotlib
+selenium
+beautifulsoup4
+networkx
+scipy
