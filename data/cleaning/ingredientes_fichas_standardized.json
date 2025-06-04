@@ -1,0 +1,90 @@
+[
+  {
+    "chemical": "ácido cítrico",
+    "conditions": ["stains", "dark_spot", "skinredness"]
+  },
+  {
+    "chemical": "ácido glicólico",
+    "conditions": ["acne_scar", "wrinkle", "stains", "dark_spot", "white_head", "papules"]
+  },
+  {
+    "chemical": "ácido láctico",
+    "conditions": ["white_head", "wrinkle", "dark_spot", "papules"]
+  },
+  {
+    "chemical": "ácido salicílico",
+    "conditions": ["acne_scar", "papules", "white_head", "black_head", "pustules", "nodules", "skinredness"]
+  },
+  {
+    "chemical": "alfa tocoferol acetato",
+    "conditions": ["wrinkle", "dark_circle", "eye_bag", "dark_spot"]
+  },
+  {
+    "chemical": "ascorbil palmitato",
+    "conditions": ["wrinkle", "dark_spot"]
+  },
+  {
+    "chemical": "carbómero",
+    "conditions": []
+  },
+  {
+    "chemical": "dexpantenol",
+    "conditions": ["acne_scar", "skinredness", "papules"]
+  },
+  {
+    "chemical": "dimeticona",
+    "conditions": ["papules", "skinredness"]
+  },
+  {
+    "chemical": "edta disódico",
+    "conditions": ["skinredness"]
+  },
+  {
+    "chemical": "esencia limón",
+    "conditions": ["vascular", "skinredness"]
+  },
+  {
+    "chemical": "ethylhexylglycerin",
+    "conditions": []
+  },
+  {
+    "chemical": "glicerina",
+    "conditions": ["wrinkle", "skinredness", "papules"]
+  },
+  {
+    "chemical": "goma xantana",
+    "conditions": []
+  },
+  {
+    "chemical": "fenoxietanol",
+    "conditions": []
+  },
+  {
+    "chemical": "potasio sorbato y ácido sórbico",
+    "conditions": []
+  },
+  {
+    "chemical": "benzoato de sodio",
+    "conditions": []
+  },
+  {
+    "chemical": "hialuronato de sodio",
+    "conditions": ["wrinkle", "skinredness", "acne_scar"]
+  },
+  {
+    "chemical": "hidróxido de sodio",
+    "conditions": []
+  },
+  {
+    "chemical": "dióxido de titanio",
+    "conditions": ["skinredness", "dark_spot"]
+  },
+  {
+    "chemical": "retinol",
+    "conditions": ["wrinkle", "acne_scar", "papules", "white_head", "skinredness"]
+  },
+  {
+    "chemical": "tocoferol",
+    "conditions": ["wrinkle", "dark_spot", "skinredness"]
+  }
+]
