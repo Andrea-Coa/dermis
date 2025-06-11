@@ -1,0 +1,30 @@
+Keras
+tensorflow
+scikit-image
+imutils
+# Paquetes principales
+Flask
+numpy
+pandas
+scikit-learn
+firebase-admin
+python-dotenv
+torch
+# Procesamiento de imágenes (para el reconocimiento facial)
+opencv-python
+Pillow
+
+# Manejo de modelos
+#pickle5==0.0.12  # Solo si usas Python < 3.8
+joblib
+
+# Manejo de archivos y requests
+werkzeug
+requests
+
+# Autenticación y seguridad
+pyjwt
+flask-cors
+torchvision
+# Base de datos (si usas algo adicional a Firebase)
+flask-sqlalchemy
