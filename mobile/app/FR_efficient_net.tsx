@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './navigation/_types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FacialRecognitionFrontalParams = {
   _user_id: string;
@@ -52,52 +53,50 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
   }, []);
 
 
-const sendImageToAPI = async () => {
-  if (!frontImage?.uri) {
-    Alert.alert('Error', 'No se encontró la imagen seleccionada');
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append('image', {
-      uri: frontImage.uri,
-      type: 'image/jpeg', // asegúrate de que el tipo sea correcto
-      name: 'foto.jpg',
-    } as any); // ← necesario para evitar errores de tipo en TS
-
-    const response = await fetch('http://172.20.10.3:5000/api/analyze-skin/efficient-net', {
-      method: 'POST',
-      // no pongas Content-Type manualmente aquí
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error del servidor');
+  const sendImageToAPI = async (): Promise<string[] | null> => {
+    if (!frontImage?.uri) {
+      Alert.alert('Error', 'No se encontró la imagen seleccionada');
+      return null;
     }
-
-    const conditions = data['skin_conditions'];
-    const message = (Array.isArray(conditions) && conditions.length > 0)
-    ? conditions.join(', ')
-    : 'No se detectaron condiciones de la piel.';
-
-    Alert.alert('Resultado del análisis', message);
-
-        
-    // Puedes navegar o guardar data aquí si lo deseas
-
-  } catch (error) {
-    console.error('Error al enviar imagen:', error);
-    Alert.alert('Error', 'Ocurrió un error al analizar la imagen');
-  } finally {
-    setLoading(false);
-  }
-};
-
+  
+    try {
+      setLoading(true);
+  
+      const formData = new FormData();
+      formData.append('image', {
+        uri: frontImage.uri,
+        type: 'image/jpeg',
+        name: 'foto.jpg',
+      } as any);
+  
+      const response = await fetch('http://192.168.37.225:5000/api/analyze-skin/efficient-net', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'Error del servidor');
+      }
+  
+      const conditions: string[] = data['skin_conditions'] ?? [];
+  
+      Alert.alert(
+        'Resultado del análisis',
+        conditions.length > 0 ? conditions.join(', ') : 'No se detectaron condiciones de la piel.'
+      );
+  
+      return conditions;
+    } catch (error) {
+      console.error('Error al enviar imagen:', error);
+      Alert.alert('Error', 'Ocurrió un error al analizar la imagen');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
 
   const pickImage = async () => {
@@ -131,21 +130,31 @@ const sendImageToAPI = async () => {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!frontImage) {
       Alert.alert('Imagen requerida', 'Por favor selecciona una foto frontal');
       return;
     }
-    sendImageToAPI();
+  
+    const conditions = await sendImageToAPI();
+    if (!conditions) return;
+  
     const safeImage: SafeImagePickerAsset = {
       uri: frontImage.uri,
       width: frontImage.width,
       height: frontImage.height,
-      ...(frontImage.base64 && { base64: frontImage.base64 })
+      ...(frontImage.base64 && { base64: frontImage.base64 }),
     };
-
-   
+  
+    const storedUserId = await AsyncStorage.getItem('user_id');
+  
+    navigation.navigate('FR_cnn', {
+      frontImage: safeImage,
+      skin_conditions: conditions,
+      _user_id: storedUserId ?? route.params._user_id,
+    });
   };
+  
 
   if (loading) {
     return (

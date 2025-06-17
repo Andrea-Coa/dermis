@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   View,
   Text,
@@ -39,12 +41,13 @@ const Register = () => {
 
 
 
+      // --- REAL RESPONSE BELOW ---
 
 
       const response = await fetch('https://70i447ofic.execute-api.us-east-1.amazonaws.com/register_users_dermis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -52,11 +55,25 @@ const Register = () => {
       console.log('Cuerpo:', result);
 
       if (response.ok) {
-        Alert.alert('✅ YES! Bienvenid@');
-        navigation.navigate('FR_efficient_net', {_user_id: result.user_id});
+          Alert.alert('✅ YES! Bienvenid@');
+          await AsyncStorage.setItem('user_id', result.user_id); // Acceso global :3
+          navigation.navigate('FR_efficient_net', { _user_id: result.user_id });
       } else {
-        Alert.alert('❌ Error', result.error || 'Algo salió mal');
+          Alert.alert('❌ Error', result.error || 'Algo salió mal');
       }
+
+      // --- MOCKED RESPONSE BELOW ---
+/*
+      const result = {
+        user_id: 'mock-user-123',
+      };
+
+      console.log('Respuesta simulada:', result);
+
+      Alert.alert('✅ YES! Bienvenid@');
+      await AsyncStorage.setItem('user_id', result.user_id); // Acceso global :3
+      navigation.navigate('FR_efficient_net', { _user_id: result.user_id });
+*/
     }catch (err) {
   if (err instanceof Error) {
     Alert.alert('❌ Error de red', err.message);

@@ -1,29 +1,56 @@
+export type SafeImagePickerAsset = {
+  uri: string;
+  width: number;
+  height: number;
+  base64?: string;
+};
+
+
 export type RootStackParamList = {
   Intro: undefined;
   Register: undefined;
-  //FacialRecognition: {_user_id:string};
+
   AnalysisResults: {
     results: {
       cnn: {
         skinType: string;
         confidence: number;
-        imageUri: string;
+        // imageUri: string;
+        inputImage: SafeImagePickerAsset;
       };
       eff: {
         conditions: string[];
-        confidence: number;
-        imageUri: string;
+        // confidence: number;
+        // imageUri: string;
+        inputImage: SafeImagePickerAsset;
       };
     };
-    _user_id: string;
-  }
-;
-  FR_efficient_net: {_user_id:string};
-  FR_cnn: {frontImage: {
-      uri: string;
-      width: number;
-      height: number;
-      base64?: string;
-    };_user_id:string};
-};
+    sensitive: boolean; // ✅ added this line
+    // _user_id: string;
+  };
 
+  SkinSensitive: {
+    results: {
+      cnn: {
+        skinType: string;
+        confidence: number;
+        // imageUri: string;
+        inputImage: SafeImagePickerAsset;
+      };
+      eff: {
+        conditions: string[];
+        // confidence: number;
+        // imageUri: string;
+        inputImage: SafeImagePickerAsset;
+      };
+    };
+  };
+
+  FR_efficient_net: { _user_id: string };
+
+  FR_cnn: {
+    frontImage: SafeImagePickerAsset;
+    skin_conditions: string[];
+    _user_id: string;
+  };
+};

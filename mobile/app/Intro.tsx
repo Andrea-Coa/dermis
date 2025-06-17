@@ -31,7 +31,7 @@ const Intro = () => {
         animate={{ scale: 1, opacity: 1 }}
         transition={{
           type: 'spring',
-          duration: 1000,
+          duration: 500,
         }}
         style={styles.logo}
       />

@@ -1,368 +1,264 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
-  Alert,
-  ActivityIndicator
-} from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp, useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
+import { Text, Card, Surface, Button } from 'react-native-paper';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from './navigation/_types';
-import {updateUserSkinData} from './api/user'
+
 type AnalysisResultsRouteProp = RouteProp<RootStackParamList, 'AnalysisResults'>;
 
-interface AnalysisResultsProps {
-  route: AnalysisResultsRouteProp;
-}
+const { width } = Dimensions.get('window');
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ route }) => {
-  const { results, _user_id } = route.params;
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [magnifierPosition] = useState(new Animated.ValueXY());
-  const [currentImage, setCurrentImage] = useState<'front' | 'side'>('front');
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Animación de la lupa de análisis
-  useEffect(() => {
-    const screenWidth = Dimensions.get('window').width;
-    const screenHeight = Dimensions.get('window').height * 0.4;
-
-    const animateMagnifier = () => {
-      const positions = [
-        { x: 0, y: 0 },
-        { x: screenWidth * 0.7, y: 0 },
-        { x: screenWidth * 0.5, y: screenHeight * 0.5 },
-        { x: screenWidth * 0.3, y: screenHeight * 0.8 },
-        { x: screenWidth * 0.7, y: screenHeight * 0.6 },
-      ];
-
-      const animations = positions.map((pos) => {
-        return Animated.timing(magnifierPosition, {
-          toValue: { x: pos.x, y: pos.y },
-          duration: 1000,
-          useNativeDriver: true,
-        });
-      });
-
-      Animated.sequence(animations).start(() => {
-        setTimeout(() => {
-          animateMagnifier();
-        }, 2000);
-      });
-    };
-
-    animateMagnifier();
-
-    return () => {
-      magnifierPosition.stopAnimation();
-    };
-  }, []);
-
-  const handleDisagree = () => {
-    navigation.goBack();
-  };
-const updateSkinData = async (userId: string, skinType: string, conditions: string[]) => {
-  try {
-    const response = await fetch('https://70i447ofic.execute-api.us-east-1.amazonaws.com/register_users_dermis', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        skyn_type: skinType,
-        skyn_conditions: conditions
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Update failed');
-    
-    return data;
-  } catch (error) {
-    console.error('Update error:', error);
-    throw error;
-  }
-};
- const handleContinue = async () => {
-    setIsLoading(true);
-    try {
-      await updateUserSkinData(
-        _user_id,
-        results.cnn.skinType || 'Normal',
-        results.eff.conditions || []
-      );
-      updateSkinData(_user_id,results.cnn.skinType,results.eff.conditions)
-      navigation.navigate('Intro');
-        
-        //{ 
-        //updatedSkinData: {
-         // skinType: results.cnn.skinType,
-          //conditions: results.eff.conditions
-       // }
-      //});
-    } catch (error) {
-      console.error('Error saving skin data:', error);
-      Alert.alert('Error', 'No se pudo guardar la información de la piel');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export default function AnalysisResults() {
+  const route = useRoute<AnalysisResultsRouteProp>();
+  const { results, sensitive } = route.params;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Image
-        source={require('../assets/logo_yes.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.title}>RESULTADOS DEL ANÁLISIS</Text>
-      <Text style={styles.subtitle}>
-        Hemos detectado las siguientes condiciones y un tipo de piel tentativo para tu rostro.
-      </Text>
-      <Text style={styles.description}>
-        Puedes estar de acuerdo con el reconocimiento o retroceder e insertar los datos por tu cuenta.
-      </Text>
-
-      {/* Selector de imágenes */}
-      <View style={styles.imageSelector}>
-        <TouchableOpacity 
-          onPress={() => setCurrentImage('front')}
-          style={[styles.selectorButton, currentImage === 'front' && styles.activeSelector]}
-        >
-          <Text style={styles.selectorButtonText}>Foto Frontal</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={() => setCurrentImage('side')}
-          style={[styles.selectorButton, currentImage === 'side' && styles.activeSelector]}
-        >
-          <Text style={styles.selectorButtonText}>Foto Lateral</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Contenedor de imagen con animación */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: currentImage === 'front' ? results.eff.imageUri : results.cnn.imageUri }}
-          style={styles.analysisImage}
-          resizeMode="contain"
-        />
-        
-        <Animated.View 
-          style={[
-            styles.magnifier,
-            {
-              transform: [
-                { translateX: magnifierPosition.x },
-                { translateY: magnifierPosition.y }
-              ]
-            }
-          ]}
-        >
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {/* Header with Logo */}
+      <View style={styles.headerContainer}>
+        <View style={styles.logoContainer}>
           <Image 
-            source={require('../assets/magnifier.png')} 
-            style={styles.magnifierIcon}
+            source={require('../assets/logo_yes.png')} 
+            style={styles.logo}
+            resizeMode="contain"
           />
-        </Animated.View>
+          <Text variant="titleMedium" style={styles.logoText}>
+            RECONOCIMIENTO{'\n'}FACIAL
+          </Text>
+        </View>
       </View>
 
-      {/* Resultados del análisis */}
-      <View style={styles.resultsContainer}>
-        <View style={styles.resultSection}>
-          <Text style={styles.resultTitle}>TIPO DE PIEL</Text>
-          <Text style={styles.resultValue}>{results.cnn.skinType || 'No detectado'}</Text>
-        </View>
+      {/* Results Title */}
+      <Text variant="headlineMedium" style={styles.resultsTitle}>
+        RESULTADOS
+      </Text>
+      
+      <Text style={styles.subtitle}>
+        Hemos detectado las siguientes condiciones y un tipo de piel tentativo 
+        para tu rostro, puedes estar de acuerdo con el reconocimiento o 
+        retroalimentar e ingresar los datos por tu cuenta.
+      </Text>
 
-        <View style={styles.resultSection}>
-          <Text style={styles.resultTitle}>CONDICIONES DETECTADAS</Text>
-          {results.eff.conditions && results.eff.conditions.length > 0 ? (
-            results.eff.conditions.map((condition: string, index: number) => (
-              <Text key={index} style={styles.resultValue}>• {condition}</Text>
-            ))
+      {/* Skin Type Card */}
+      <Surface style={styles.resultCard} elevation={3}>
+        <View style={styles.cardHeader}>
+          <Text variant="titleMedium" style={styles.cardTitle}>TIPO DE PIEL</Text>
+        </View>
+        <View style={styles.cardContent}>
+          <View style={styles.resultBadge}>
+            <Text style={styles.resultText}>{results.cnn.skinType}</Text>
+          </View>
+          <Text style={styles.confidenceText}>
+            Confianza: {(results.cnn.confidence * 100).toFixed(1)}%
+          </Text>
+          <Image 
+            source={{ uri: results.cnn.inputImage.uri }} 
+            style={styles.analysisImage} 
+          />
+        </View>
+      </Surface>
+
+      {/* Conditions Card */}
+      <Surface style={styles.resultCard} elevation={3}>
+        <View style={styles.cardHeader}>
+          <Text variant="titleMedium" style={styles.cardTitle}>CONDICIONES</Text>
+        </View>
+        <View style={styles.cardContent}>
+          {results.eff.conditions.length > 0 ? (
+            <View style={styles.conditionsContainer}>
+              {results.eff.conditions.map((condition, index) => (
+                <View key={index} style={styles.conditionBadge}>
+                  <Text style={styles.conditionText}>{condition}</Text>
+                </View>
+              ))}
+            </View>
           ) : (
-            <Text style={styles.resultValue}>No se detectaron condiciones</Text>
+            <View style={styles.noConditionsContainer}>
+              <Text style={styles.noConditionsText}>
+                No se detectó ninguna condición de la piel.
+              </Text>
+            </View>
           )}
+          <Image 
+            source={{ uri: results.eff.inputImage.uri }} 
+            style={styles.analysisImage} 
+          />
         </View>
-
-        <View style={styles.resultSection}>
-          <Text style={styles.resultTitle}>CONFIANZA DEL ANÁLISIS</Text>
-          <Text style={styles.resultValue}>
-            Tipo de piel: {(results.cnn.confidence * 100).toFixed(1)}% de certeza
-          </Text>
-          <Text style={styles.resultValue}>
-            Condiciones: {(results.eff.confidence * 100).toFixed(1)}% de certeza promedio
-          </Text>
+      </Surface>
+      
+     {/* Sensitive Skin Card */}
+     <Surface style={styles.resultCard} elevation={3}>
+        <View style={styles.cardHeader}>
+          <Text variant="titleMedium" style={styles.cardTitle}>SENSIBILIDAD</Text>
         </View>
-      </View>
+        <View style={styles.cardContent}>
+          <View style={styles.resultBadge}>
+            <Text style={styles.resultText}>
+              {route.params.sensitive ? 'Piel Sensible' : 'Piel No Sensible'}
+            </Text>
+          </View>
+        </View>
+      </Surface>
 
-      {/* Botones de acción */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleDisagree} style={styles.disagreeButton}>
-          <Text style={styles.buttonText}>Difiero con los resultados</Text>
-        </TouchableOpacity>
+      {/* Action Buttons */}
+      <View style={styles.actionContainer}>
 
-        <TouchableOpacity 
-          onPress={handleContinue} 
-          style={styles.agreeButton}
-          disabled={isLoading}
+        
+        <Button 
+          mode="contained" 
+          style={styles.continueButton}
+          labelStyle={styles.continueButtonText}
+          onPress={() => {/* Handle continue */}}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.buttonText}>Siguiente</Text>
-          )}
-        </TouchableOpacity>
+          Siguiente
+        </Button>
       </View>
     </ScrollView>
   );
-};
+}
 
-// Los estilos permanecen igual que en tu código original
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: '#ffece0',
+  },
+  contentContainer: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  headerContainer: {
     alignItems: 'center',
-    padding: 24,
+    marginBottom: 30,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   logo: {
     width: 150,
     height: 150,
     marginBottom: 12,
   },
-  title: {
+  logoText: {
     color: '#6b0d29',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: '#6b0d29',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 8,
-    paddingHorizontal: 20,
-  },
-  description: {
-    color: '#6b0d29',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
-    lineHeight: 20,
-  },
-  imageSelector: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-    width: '100%',
-  },
-  selectorButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 5,
-    borderRadius: 20,
-    backgroundColor: '#ffe6e1',
-    borderWidth: 1,
-    borderColor: '#cc5533',
-  },
-  activeSelector: {
-    backgroundColor: '#a44230',
-  },
-  selectorButtonText: {
-    color: '#6b0d29',
-    fontWeight: '600',
-  },
-  imageContainer: {
-    width: '100%',
-    height: 250,
-    backgroundColor: '#ffe6e1',
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: '#cc5533',
-    marginBottom: 20,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  analysisImage: {
-    width: '80%',
-    height: '80%',
-    resizeMode: 'contain',
-  },
-  magnifier: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  magnifierIcon: {
-    width: 40,
-    height: 40,
-    tintColor: '#a44230',
-  },
-  resultsContainer: {
-    width: '100%',
-    backgroundColor: '#ffe6e1',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: '#cc5533',
-  },
-  resultSection: {
-    marginBottom: 15,
-  },
-  resultTitle: {
-    color: '#6b0d29',
-    fontSize: 18,
-    fontWeight: 'bold',
     marginBottom: 5,
   },
-  resultValue: {
-    color: '#6b0d29',
-    fontSize: 16,
-    marginLeft: 10,
-    marginBottom: 3,
+  resultsTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 16,
   },
-  buttonContainer: {
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 20,
+    paddingHorizontal: 10,
+  },
+  resultCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginBottom: 20,
+    overflow: 'hidden',
+    elevation: 3,
+  },
+  cardHeader: {
+    backgroundColor: '#a44230',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  cardTitle: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  cardContent: {
+    padding: 20,
+  },
+  resultBadge: {
+    backgroundColor: '#a44230',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  resultText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  confidenceText: {
+    color: '#666666',
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  conditionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  conditionBadge: {
+    backgroundColor: '#a44230',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 15,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  conditionText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  noConditionsContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  noConditionsText: {
+    color: '#666666',
+    fontSize: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  analysisImage: {
     width: '100%',
-    marginTop: 10,
+    height: 180,
+    borderRadius: 15,
+    backgroundColor: '#F5F5F5',
+  },
+  actionContainer: {
+    marginTop: 20,
+    gap: 15,
   },
   disagreeButton: {
-    backgroundColor: '#cccccc',
+    borderColor: '#a44230',
+    borderWidth: 2,
     borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    flex: 1,
-    marginRight: 10,
+    paddingVertical: 8,
   },
-  agreeButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    flex: 1,
-    marginLeft: 10,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
+  disagreeButtonText: {
+    color: '#a44230',
     fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: 16,
+  },
+  continueButton: {
+    backgroundColor: '#a44230',
+    borderRadius: 25,
+    paddingVertical: 8,
+    elevation: 3,
+  },
+  continueButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
-
-export default AnalysisResults;
