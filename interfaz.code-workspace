@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../interfaz"
+		},
+		{
+			"path": "../funcional"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}
