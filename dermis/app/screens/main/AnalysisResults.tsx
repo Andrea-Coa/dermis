@@ -69,9 +69,8 @@ export default function AnalysisResults() {
       </Text>
       
       <Text style={styles.subtitle}>
-        Hemos detectado las siguientes condiciones y un tipo de piel tentativo 
-        para tu rostro, puedes estar de acuerdo con el reconocimiento o 
-        retroalimentar e ingresar los datos por tu cuenta.
+        Hemos detectado las siguientes condiciones y un tipo cosmético de piel 
+        para tu rostro. Estas características serán utilizadas para crear tu rutina de cuidado de la piel.
       </Text>
 
       {/* Skin Type Card */}

@@ -88,7 +88,7 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
         name: 'foto.jpg',
       } as any);
   
-      const response = await fetch('http://192.168.37.225:5000/api/analyze-skin/efficient-net', {
+      const response = await fetch('http://192.168.1.48:5000/api/analyze-skin/efficient-net', {
         method: 'POST',
         body: formData,
       });

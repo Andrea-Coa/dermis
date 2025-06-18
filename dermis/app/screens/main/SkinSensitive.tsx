@@ -31,7 +31,8 @@ export default function SkinSensitive() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          _user_id: user_id, // Replace with actual user ID
+          _user_id: user_id,
+          is_sensitive: isSensitive.toString(),
           results: {
             cnn: {
               skinType: results.cnn.skinType
@@ -42,7 +43,6 @@ export default function SkinSensitive() {
           },
         }),
       });
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

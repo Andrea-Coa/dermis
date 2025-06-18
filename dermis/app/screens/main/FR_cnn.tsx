@@ -32,20 +32,32 @@ const FR_cnn: React.FC = () => {
     const { params } = useRoute<FRCnnRouteProp>();
 
     const [frontImage, setFrontImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
-    const [permissionGranted, setPermissionGranted] = useState(false);
+    const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
+    const [galleryPermissionGranted, setGalleryPermissionGranted] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     useEffect(() => {
         (async () => {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (status !== 'granted') {
+          // Request gallery permissions
+          const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (galleryStatus.status !== 'granted') {
             Alert.alert(
               'Permisos requeridos',
               'Necesitamos permiso para acceder a tus fotos para el análisis de piel.'
             );
           }
-          setPermissionGranted(status === 'granted');
+          setGalleryPermissionGranted(galleryStatus.status === 'granted');
+
+          // Request camera permissions
+          const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+          if (cameraStatus.status !== 'granted') {
+            Alert.alert(
+              'Permisos de cámara requeridos',
+              'Necesitamos permiso para usar la cámara para tomar fotos de análisis.'
+            );
+          }
+          setCameraPermissionGranted(cameraStatus.status === 'granted');
         })();
       }, []);
   
@@ -54,8 +66,39 @@ const FR_cnn: React.FC = () => {
     //     console.log('Received params in FR_cnn:', params);
     // }, [params]);
 
-    const pickImage = async () => {
-        if (!permissionGranted) {
+    const takePhoto = async () => {
+        if (!cameraPermissionGranted) {
+          Alert.alert(
+            'Permiso de cámara denegado',
+            'Por favor habilita los permisos de cámara en la configuración de tu dispositivo.'
+          );
+          return;
+        }
+    
+        try {
+          setLoading(true);
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+            base64: true,
+          });
+    
+          if (!result.canceled && result.assets && result.assets.length > 0) {
+            setFrontImage(result.assets[0]);
+          }
+          
+        } catch (error) {
+          console.error('Error al tomar foto:', error);
+          Alert.alert('Error', 'No se pudo tomar la foto');
+        } finally {
+          setLoading(false);
+        }
+    };
+
+    const pickImageFromGallery = async () => {
+        if (!galleryPermissionGranted) {
           Alert.alert(
             'Permiso denegado',
             'Por favor habilita los permisos en la configuración de tu dispositivo.'
@@ -135,7 +178,6 @@ const FR_cnn: React.FC = () => {
         const response = await sendImageToAPI();
         if (!response) return;
         console.log("Response from server", response);
-        console.log("PARAMS: ", params._user_id, params.frontImage)
 
         const safeImage: SafeImagePickerAsset = {
             uri: frontImage.uri,
@@ -194,9 +236,16 @@ const FR_cnn: React.FC = () => {
               </Text>
             </View>
     
-            <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
-              <Text style={styles.uploadButtonText}>Subir foto lateral</Text>
-            </TouchableOpacity>
+            {/* Image selection buttons */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={takePhoto} style={styles.cameraButton}>
+                <Text style={styles.buttonText}>Tomar foto</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={pickImageFromGallery} style={styles.galleryButton}>
+                <Text style={styles.buttonText}>Galería</Text>
+              </TouchableOpacity>
+            </View>
     
             {frontImage && (
               <View style={styles.previewContainer}>
@@ -288,6 +337,34 @@ const styles = StyleSheet.create({
       color: '#6b0d29',
       fontSize: 14,
       flex: 1,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 15,
+      gap: 10,
+    },
+    cameraButton: {
+      flex: 1,
+      backgroundColor: '#a44230',
+      borderRadius: 24,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+    },
+    galleryButton: {
+      flex: 1,
+      backgroundColor: '#cc5533',
+      borderRadius: 24,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#ffece0',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
     },
     uploadButton: {
       backgroundColor: '#a44230',
