@@ -10,7 +10,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 
 
-export default function AppStack() {
+export default function OnboardingStack() {
     return (
         <Stack.Navigator>
           <Stack.Screen 

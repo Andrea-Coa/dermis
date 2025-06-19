@@ -4,12 +4,21 @@ export type SafeImagePickerAsset = {
     height: number;
     base64?: string;
   };
+
+export type Product = {
+  id: number;
+  title: string;
+  description: string;
+  image: SafeImagePickerAsset;
+  step: string;
+};
   
   
   export type RootStackParamList = {
     Intro: undefined;
     Register: undefined;
     Login: undefined;
+    ProductDetail: { product: Product };
   
     AnalysisResults: {
       results: {

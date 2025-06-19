@@ -1,22 +1,23 @@
-// RootNavigation.tsx
 import React from 'react';
-import { useUser } from '../../context/UserContext'; // Adjust path as needed
+import { useUser } from '../../context/UserContext';
 import { NavigationContainer } from '@react-navigation/native';
 
-
-// Import your navigation components here
-
-import AppStack from './AppStack';
 import AuthStack from './AuthStack';
+import OnboardingStack from './OnboardingStack' // <-- Create this
+import MainAppStack from './MainAppStack';       // <-- Create this
 
 export default function RootNavigation() {
-  const { userId } = useUser();
-  
-  // Your navigation logic here
+  const { userId, hasCompletedOnboarding } = useUser();
+
   return (
-    // Your navigation components
-    <NavigationContainer>
-    {userId ? <AppStack /> : <AuthStack />}
+  <NavigationContainer>
+    {!userId ? (
+      <AuthStack />
+    ) : !hasCompletedOnboarding ? (
+      <OnboardingStack />
+    ) : (
+      <MainAppStack /> // Now includes the drawer!
+    )}
   </NavigationContainer>
   );
 }

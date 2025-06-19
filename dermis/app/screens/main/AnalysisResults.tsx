@@ -15,7 +15,7 @@ export default function AnalysisResults() {
   const route = useRoute<AnalysisResultsRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { results, sensitive } = route.params;
-  const { setUserId } = useUser();
+  const { setUserId, setHasCompletedOnboarding } = useUser();
 
   const handleLogout = () => {
     Alert.alert(
@@ -136,11 +136,15 @@ export default function AnalysisResults() {
 
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
+
         <Button 
           mode="contained" 
           style={styles.continueButton}
           labelStyle={styles.continueButtonText}
-          onPress={() => {/* Handle continue */}}
+          onPress={async () => {
+            await setHasCompletedOnboarding(true);
+            // RootNavigation will now detect this change and switch to MainAppStack
+          }}
         >
           Siguiente
         </Button>
@@ -193,9 +197,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 5,
   },
-  logoutButton: {
-    marginTop: 10,
-  },
+  // logoutButton: {
+  //   marginTop: 10,
+  // },
   resultsTitle: {
     fontSize: 24,
     fontWeight: 'bold',
