@@ -4,14 +4,13 @@ import { Text, Surface } from 'react-native-paper';
 import { SafeImagePickerAsset } from '../navigation/_types';
 
 type Props = {
-  title: string;
-  description: string;
+  name: string;
+  ingredients: string[];
   image: SafeImagePickerAsset;
   step: string;
   onPress?: () => void;
 };
 
-// Array of pastel background colors
 const pastelColors = [
   '#FFE5E5', // Pastel Pink
   '#E5F3FF', // Pastel Blue
@@ -23,18 +22,15 @@ const pastelColors = [
   '#FFE5F5', // Pastel Rose
 ];
 
-export default function ProductCard({ title, description, image, step, onPress }: Props) {
-  // Generate a consistent color based on the step or title
-  const colorIndex = (step + title).length % pastelColors.length;
+export default function ProductCard({ name, ingredients, image, step, onPress }: Props) {
+  const colorIndex = (step + name).length % pastelColors.length;
   const backgroundColor = pastelColors[colorIndex];
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <Surface style={[styles.card, { backgroundColor }]} elevation={3}>
-        {/* Step at the top, aligned left */}
         <Text style={styles.stepText}>{step.toUpperCase()}</Text>
-        
-        {/* Content area with image on left and text on right */}
+
         <View style={styles.contentContainer}>
           <Image 
             source={{ uri: image.uri }} 
@@ -42,8 +38,13 @@ export default function ProductCard({ title, description, image, step, onPress }
             resizeMode="cover" 
           />
           <View style={styles.textContainer}>
-            <Text style={styles.productTitle}>{title}</Text>
-            <Text style={styles.productDescription}>{description}</Text>
+            <Text style={styles.productTitle}>{name}</Text>
+            <Text
+              style={styles.productDescription}
+              numberOfLines={3} // para que no se muestre toda la lista, y si es muy larga que ponga ...
+            >
+              {ingredients.join(', ')}
+            </Text>
           </View>
         </View>
       </Surface>

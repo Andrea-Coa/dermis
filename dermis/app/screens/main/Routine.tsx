@@ -3,75 +3,62 @@ import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import ProductCard from '../../components/ProductCard';
 import { MainStackParamList } from '../../navigation/MainAppStack';
-
 import { SafeImagePickerAsset } from '../../navigation/_types';
 
-/*
-  Routine.tsx es la primera pantalla que aparece después de que el usuario haya completado
-  todas las preguntas. 
-  Routine.tsx AÚN NO ESTÁ CONECTADA CON LA LÓGICA DE LA APP.
-  Sólo muestra cosas hardcodeadas
-*/
-
-type Product = {
-  id: number;
-  title: string;
-  description: string;
-  image: SafeImagePickerAsset;
+// The recommended product structure (as saved in AsyncStorage)
+type RecommendedProduct = {
   step: string;
+  name: string;
+  ingredients: string[];
 };
 
-type RoutineNavigationProp = NativeStackNavigationProp<MainStackParamList, 'DrawerNavigator'>;
+type RoutineNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'DrawerNavigator'
+>;
 
 export default function RoutineScreen() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [recommended, setRecommended] = useState<RecommendedProduct[]>([]);
   const navigation = useNavigation<RoutineNavigationProp>();
 
   useEffect(() => {
-    // Simulated API call
-    const mockData: Product[] = [
-      {
-        id: 1,
-        title: 'Gel Limpiador Suave',
-        description: 'Limpia profundamente sin resecar la piel.',
-        image: {
-          uri: Image.resolveAssetSource(require('../../../assets/cleanser.jpg')).uri,
-          width: 100,
-          height: 100,
-        },
-        step: 'Limpiar',
-      },
-      {
-        id: 2,
-        title: 'Suero Antioxidante',
-        description: 'Reduce manchas y mejora el tono de piel.',
-        image: {
-          uri: Image.resolveAssetSource(require('../../../assets/treatment.jpg')).uri,
-          width: 100,
-          height: 100,
-        },
-        step: 'Tratar',
-      },
-      {
-        id: 3,
-        title: 'Protector Solar SPF50',
-        description: 'Protege contra rayos UV y envejecimiento prematuro.',
-        image: {
-          uri: Image.resolveAssetSource(require('../../../assets/sunscreen.jpg')).uri,
-          width: 100,
-          height: 100,
-        },
-        step: 'Proteger',
-      },
-    ];    
-    setProducts(mockData);
+    const loadFromAsyncStorage = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("results");
+        if (stored) {
+          const parsed = JSON.parse(stored) as RecommendedProduct[];
+          setRecommended(parsed);
+        } else {
+          console.warn("No recommended products found in AsyncStorage.");
+        }
+      } catch (error) {
+        console.error("Failed to load from AsyncStorage:", error);
+      }
+    };
+
+    loadFromAsyncStorage();
   }, []);
 
-  const handleProductPress = (product: Product) => {
-    // Navigate to ProductDetail screen and pass the product data
-    navigation.navigate('ProductDetail', { product });
+  const capitalizeWords = (text: string) => {
+    return text.replace(/\b\w/g, char => char.toUpperCase());
+  };
+  
+
+  const handleProductPress = (product: RecommendedProduct) => {
+    // Optional: Navigate to detail screen or show more info
+    // navigation.navigate('ProductDetail', { product });
+    console.log("Navigation not implemented yet");
+  };
+
+  // temporal para mostrar imágenes
+  const stepToImage: Record<string, any> = {
+    Limpiar: require('../../../assets/cleanser.jpg'),
+    Tratar: require('../../../assets/treatment.jpg'),
+    Proteger: require('../../../assets/sunscreen.jpg'),
   };
 
   return (
@@ -83,15 +70,20 @@ export default function RoutineScreen() {
         Basado en tu análisis, te recomendamos seguir utilizar estos productos para mejorar y proteger tu piel.
       </Text>
 
-      {products.map(product => (
+      {recommended.map((product, index) => (
         <ProductCard
-          key={product.id}
-          title={product.title}
-          description={product.description}
-          image={product.image}
+          key={index}
+          name={capitalizeWords(product.name)}
+          ingredients={product.ingredients}
           step={product.step}
+          image={{
+            uri: Image.resolveAssetSource(stepToImage[product.step] || require('../../../assets/sunscreen.jpg')).uri,
+            width: 100,
+            height: 100,
+          }}
           onPress={() => handleProductPress(product)}
-        />
+      />
+      
       ))}
     </ScrollView>
   );

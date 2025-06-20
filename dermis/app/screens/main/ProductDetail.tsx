@@ -6,19 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductDetailContent from '../../components/ProductDetailContent';
 import { Product, RootStackParamList } from '../../navigation/_types';
 
-// type Product = {
-//   id: number;
-//   title: string;
-//   description: string;
-//   image: SafeImagePickerAsset;
-//   step: string;
-// };
-
-// type RootStackParamList = {
-//   ProductDetail: { product: Product };
-// };
-
 type ProductDetailRouteProp = RouteProp<RootStackParamList, 'ProductDetail'>;
+/*
+  Esta es la screen que se muestra al dar clic en un producto en Routine.tsx.
+  Todavía falta implementar la lógica para que llame a un lambda y recupere
+  más información del producto, así como su imagen.
+*/
 
 export default function ProductDetailScreen() {
   const route = useRoute<ProductDetailRouteProp>();
