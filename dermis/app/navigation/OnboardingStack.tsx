@@ -23,15 +23,15 @@ export default function OnboardingStack() {
             component={FR_cnn}
             options={{ title: 'Foto Lateral' }}
           />
+            <Stack.Screen 
+              name="SkinSensitive"  
+              component={SkinSensitive}
+              options={{ title: 'Sensibilidad de la piel' }}
+            />
           <Stack.Screen 
             name="AnalysisResults"  
             component={AnalysisResults}
             options={{ title: 'Resultados del análisis' }}
-          />
-          <Stack.Screen 
-            name="SkinSensitive"  
-            component={SkinSensitive}
-            options={{ title: 'Sensibilidad de la piel' }}
           />
         </Stack.Navigator>
       );

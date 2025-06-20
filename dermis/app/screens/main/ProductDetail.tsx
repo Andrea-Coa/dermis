@@ -4,19 +4,19 @@ import { Text, IconButton } from 'react-native-paper';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductDetailContent from '../../components/ProductDetailContent';
-import { SafeImagePickerAsset } from '../../navigation/_types';
+import { Product, RootStackParamList } from '../../navigation/_types';
 
-type Product = {
-  id: number;
-  title: string;
-  description: string;
-  image: SafeImagePickerAsset;
-  step: string;
-};
+// type Product = {
+//   id: number;
+//   title: string;
+//   description: string;
+//   image: SafeImagePickerAsset;
+//   step: string;
+// };
 
-type RootStackParamList = {
-  ProductDetail: { product: Product };
-};
+// type RootStackParamList = {
+//   ProductDetail: { product: Product };
+// };
 
 type ProductDetailRouteProp = RouteProp<RootStackParamList, 'ProductDetail'>;
 

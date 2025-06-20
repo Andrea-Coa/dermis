@@ -8,6 +8,13 @@ import { MainStackParamList } from '../../navigation/MainAppStack';
 
 import { SafeImagePickerAsset } from '../../navigation/_types';
 
+/*
+  Routine.tsx es la primera pantalla que aparece después de que el usuario haya completado
+  todas las preguntas. 
+  Routine.tsx AÚN NO ESTÁ CONECTADA CON LA LÓGICA DE LA APP.
+  Sólo muestra cosas hardcodeadas
+*/
+
 type Product = {
   id: number;
   title: string;

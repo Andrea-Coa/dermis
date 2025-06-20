@@ -137,22 +137,32 @@ const FR_cnn: React.FC = () => {
         try {
             setLoading(true);
     
-            // const formData = new FormData();
-            // formData.append('image', {
-            //     uri: frontImage.uri,
-            //     type: 'image/jpeg',
-            //     name: 'foto.jpg',
-            // } as any);
-    
+            const formData = new FormData();
+            formData.append('image', {
+                uri: frontImage.uri,
+                type: 'image/jpeg',
+                name: 'foto.jpg',
+            } as any);
+            
+            const response = await fetch('http://192.168.1.48:5000/api/analyze-skin/cnn', {
+              method: 'POST',
+              body: formData
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.message || 'Error del servidor');
+            }
+            console.log(data);
+            
             // Simulated delay to mimic real API latency
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+            // await new Promise((resolve) => setTimeout(resolve, 1000));
             // Mocked API response
-            const data = {
-                status: "success",
-                skin_type: "Oily",
-                confidence: 0.8723,
-            };
+            // const data = {
+            //     status: "success",
+            //     skin_type: "Oily",
+            //     confidence: 0.8723,
+            // };
     
             Alert.alert(
                 'Resultado del análisis',

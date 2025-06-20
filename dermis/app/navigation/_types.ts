@@ -12,6 +12,12 @@ export type Product = {
   image: SafeImagePickerAsset;
   step: string;
 };
+
+export type RecommendedProduct = {
+  step: string; // e.g. "cleansers", "moisturizers", etc.
+  name: string;
+  ingredients: string[];
+};
   
   
   export type RootStackParamList = {

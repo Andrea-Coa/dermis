@@ -7,7 +7,7 @@ import RoutineScreen from '../screens/main/Routine';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import ProductDetailScreen from '../screens/main/ProductDetail';
 import CustomDrawer from '../components/CustomDrawer';
-import { SafeImagePickerAsset } from './_types';
+import { SafeImagePickerAsset, RecommendedProduct } from './_types';
 
 // Type definitions
 type Product = {
@@ -22,11 +22,12 @@ type Product = {
 export type MainStackParamList = {
   DrawerNavigator: undefined;
   ProductDetail: { product: Product };
+  Routine: { recommendedProducts: RecommendedProduct[] }; // ✅ add this
 };
 
 // Drawer Navigator Types (only drawer screens)
 export type DrawerParamList = {
-  'My Routine': undefined;
+  Routine: undefined;
   Profile: undefined;
   Settings: undefined;
 };
@@ -38,13 +39,13 @@ const Drawer = createDrawerNavigator<DrawerParamList>();
 function DrawerNavigator() {
   return (
     <Drawer.Navigator
-      initialRouteName="My Routine"
+      initialRouteName="Routine"
       drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
         headerShown: true,
       }}
     >
-      <Drawer.Screen name="My Routine" component={RoutineScreen} />
+      <Drawer.Screen name="Routine" component={RoutineScreen} />
       <Drawer.Screen name="Profile" component={ProfileScreen} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>

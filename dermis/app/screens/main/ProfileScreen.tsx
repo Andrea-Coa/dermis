@@ -91,6 +91,15 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>{error}</Text>
+        <Button
+          mode="outlined"
+          style={styles.logoutButton}
+          labelStyle={styles.logoutButtonText}
+          onPress={handleForgetToken}
+          icon="refresh"
+          >
+          Olvidar token
+        </Button>
       </View>
     );
   }

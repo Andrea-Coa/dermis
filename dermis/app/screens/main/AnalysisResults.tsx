@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, StyleSheet, Image, ScrollView, Dimensions, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Image, ScrollView, Dimensions, Alert, ActivityIndicator } from 'react-native';
 import { Text, Card, Surface, Button, IconButton } from 'react-native-paper';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/_types';
+import { RootStackParamList , RecommendedProduct} from '../../navigation/_types';
 import { useUser } from '../../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -16,6 +16,8 @@ export default function AnalysisResults() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { results, sensitive } = route.params;
   const { setUserId, setHasCompletedOnboarding } = useUser();
+
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -31,9 +33,7 @@ export default function AnalysisResults() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Clear AsyncStorage
               await AsyncStorage.removeItem('user_id');
-              // Clear context - this will automatically trigger RootNavigation to switch to AuthStack
               setUserId(null);
             } catch (error) {
               console.error('Error during logout:', error);
@@ -44,6 +44,63 @@ export default function AnalysisResults() {
       ]
     );
   };
+
+  const handleContinue = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://192.168.1.48:5001/preprocesar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          skyn_type: results.cnn.skinType,
+          conditions: results.eff.conditions.length > 0 ? results.eff.conditions : ["wrinkle"],
+          is_sensitive: sensitive ? "true" : "false",
+        }),
+      });
+      
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Raw API response (may vary by skin type):', data);
+
+      // Transformar la data a un objeto más entendible
+      const recommendedProducts = Object.entries(data as Record<string, { name: string; ingredients: string }>).map(
+        ([step, details]) => ({
+          step,
+          name: details.name,
+          ingredients: JSON.parse(details.ingredients.replace(/'/g, '"')) as string[],
+        })
+      );
+      console.log(recommendedProducts);
+      await AsyncStorage.setItem("results", JSON.stringify(recommendedProducts));
+
+      // Navigate to Routine screen and pass the products
+      // navigation.navigate('Routine', { recommendedProducts });
+      // Quitamos navigation.navigate porque setHasCompletedOnboarding lo maneja mejor
+      await setHasCompletedOnboarding(true);
+
+
+    } catch (error) {
+      console.error('❌ Error calling skincare API:', error);
+      Alert.alert('Error', 'Ocurrió un error al procesar los resultados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator animating={true} size="large" />
+        <Text style={styles.loadingText}>Creando tu rutina...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -136,20 +193,16 @@ export default function AnalysisResults() {
 
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
-
         <Button 
           mode="contained" 
           style={styles.continueButton}
           labelStyle={styles.continueButtonText}
-          onPress={async () => {
-            await setHasCompletedOnboarding(true);
-            // RootNavigation will now detect this change and switch to MainAppStack
-          }}
+          onPress={handleContinue}
         >
           Siguiente
         </Button>
         
-        <Button 
+        {/* <Button 
           mode="outlined" 
           style={styles.logoutButtonBottom}
           labelStyle={styles.logoutButtonBottomText}
@@ -157,7 +210,7 @@ export default function AnalysisResults() {
           icon="logout"
         >
           Cerrar Sesión
-        </Button>
+        </Button> */}
       </View>
     </ScrollView>
   );
@@ -197,9 +250,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 5,
   },
-  // logoutButton: {
-  //   marginTop: 10,
-  // },
   resultsTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -293,17 +343,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 15,
   },
-  disagreeButton: {
-    borderColor: '#a44230',
-    borderWidth: 2,
-    borderRadius: 25,
-    paddingVertical: 8,
-  },
-  disagreeButtonText: {
-    color: '#a44230',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
   continueButton: {
     backgroundColor: '#a44230',
     borderRadius: 25,
@@ -325,5 +364,10 @@ const styles = StyleSheet.create({
     color: '#6b0d29',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#6b0d29',
   },
 });
