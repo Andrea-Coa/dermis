@@ -26,6 +26,7 @@ const Register = () => {
     nickname: '',
     edad: '',
     correo: '',
+    contrasena: '',
   });
 
   const handleChange = (name: keyof typeof formData, value: string) => {
@@ -39,6 +40,7 @@ const Register = () => {
         email: formData.correo,
         age: parseInt(formData.edad, 10),
         nick_name: formData.nickname,
+        password: formData.contrasena,
       };
 
       // --- REAL RESPONSE BELOW ---
@@ -135,8 +137,8 @@ const Register = () => {
           placeholderTextColor="#6b0d29"
           secureTextEntry
           style={styles.input}
-          // value={formData.contrasena}
-          // onChangeText={(text) => handleChange('contrasena', text)}
+          value={formData.contrasena}
+          onChangeText={(text) => handleChange('contrasena', text)}
         />
 
 

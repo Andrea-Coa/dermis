@@ -25,7 +25,7 @@ const Login = () => {
   const { setUserId } = useUser();
   const [formData, setFormData] = useState({
     correo: '',
-    contraseña: '',
+    contrasena: '',
   });
 
   const handleChange = (name: keyof typeof formData, value: string) => {
@@ -36,7 +36,7 @@ const Login = () => {
     try {
       const payload = {
         email: formData.correo,
-        password: formData.contraseña,
+        password: formData.contrasena,
       };
 
       // --- REAL RESPONSE BELOW ---
@@ -114,8 +114,8 @@ const Login = () => {
           placeholderTextColor="#6b0d29"
           secureTextEntry
           style={styles.input}
-          value={formData.contraseña}
-          onChangeText={(text) => handleChange('contraseña', text)}
+          value={formData.contrasena}
+          onChangeText={(text) => handleChange('contrasena', text)}
         />
       <Button 
           mode="contained" 
