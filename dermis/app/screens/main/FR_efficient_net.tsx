@@ -6,16 +6,12 @@ import {
   StyleSheet, 
   ScrollView, 
   Alert,
-  TouchableOpacity
+  TouchableOpacity,
+  Modal
 } from 'react-native';
 import { 
   Button, 
-  Card, 
-  Title, 
-  Paragraph, 
-  ActivityIndicator,
-  IconButton,
-  Chip,
+  ActivityIndicator
 } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, RouteProp } from '@react-navigation/native';
@@ -25,8 +21,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FacialRecognitionFrontalParams = {
   _user_id: string;
-  // otros parámetros si los hay
 };
+
 type SafeImagePickerAsset = {
   uri: string;
   width: number;
@@ -41,16 +37,32 @@ interface FR_efficient_netProps {
 }
 
 const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
-    
   const [frontImage, setFrontImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
   const [galleryPermissionGranted, setGalleryPermissionGranted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  // Imágenes de ejemplo para el carrusel
+  const exampleImages = [
+    require('../../../assets/example1.png'),
+    require('../../../assets/example2.png'),
+    require('../../../assets/example3.png')
+  ];
+
+  // Efecto para rotar imágenes cada 5 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentExampleIndex((prev) => (prev + 1) % exampleImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Efecto para permisos
   useEffect(() => {
     (async () => {
-      // Request gallery permissions
       const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (galleryStatus.status !== 'granted') {
         Alert.alert(
@@ -60,7 +72,6 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
       }
       setGalleryPermissionGranted(galleryStatus.status === 'granted');
 
-      // Request camera permissions
       const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
       if (cameraStatus.status !== 'granted') {
         Alert.alert(
@@ -88,7 +99,7 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
         name: 'foto.jpg',
       } as any);
   
-      const response = await fetch('http://192.168.1.48:5000/api/analyze-skin/efficient-net', {
+      const response = await fetch('http://192.168.1.81:5000/api/analyze-skin/logistic_regression_v1', {
         method: 'POST',
         body: formData,
       });
@@ -216,76 +227,139 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image
-        source={require('../../../assets/logo_yes.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {/* Encabezado con logo y título */}
+      <View style={styles.headerContainer}>
+        <Image source={require('../../../assets/logo_yes.png')} style={styles.logo} />
+        <View style={styles.titleContainer}>
+          <View style={styles.textPaddingWrapper}>  
+            <Text style={styles.mainTitle} numberOfLines={2}>
+              ¡ ARMEMOS TU RUTINA !
+            </Text>
+          </View>
+        </View>
+      </View>
 
-      <Title style={styles.title}>ARMEMOS TU RUTINA DE CUIDADO!</Title>
-      <Title style={styles.subtitle}>RECONOCIMIENTO FACIAL</Title>
+      <View style={styles.horizontalLine} />
+      <Text style={styles.subtitle}>Reconocimiento Facial</Text>
       
-      <Paragraph style={styles.description}>
-        Para reconocer tu tipo de piel y condiciones requerimos dos fotos de tu rostro
-      </Paragraph>
+      <Text style={styles.description}>
+        Para reconocer tu tipo de piel y condiciones requerimos de dos fotos de tu rostro,
+        una completa frontal y una lateral completa
+      </Text>
+      <View style={styles.horizontalLine} />
 
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title style={styles.sectionTitle}>FOTO FRONTAL</Title>
-          <Paragraph style={styles.instructions}>Ejemplo de cómo tomar la foto:</Paragraph>
-          
-          <View style={styles.exampleContainer}>
-            <Image 
-              source={require('../../../assets/frontal_example.png')} 
-              style={styles.exampleImage}
-            />
-            <View style={styles.exampleTextContainer}>
-              <Chip icon="check" style={styles.chip}>Rostro completo y centrado</Chip>
-              <Chip icon="lightbulb-outline" style={styles.chip}>Buena iluminación</Chip>
-              <Chip icon="face-woman" style={styles.chip}>Sin maquillaje</Chip>
-              <Chip icon="glasses" style={styles.chip}>Sin gafas o accesorios</Chip>
-            </View>
+      {/* Sección de ejemplos con carrusel */}
+      <Text style={styles.subtitle}>Ejemplos Frontales</Text>
+      
+      <View style={styles.exampleSection}>
+        <View style={styles.carouselContainer}>
+          <Image 
+            source={exampleImages[currentExampleIndex]} 
+            style={styles.exampleImage}
+          />
+          <View style={styles.dotsContainer}>
+            {exampleImages.map((_, index) => (
+              <View 
+                key={index}
+                style={[
+                  styles.dot,
+                  index === currentExampleIndex && styles.activeDot
+                ]}
+              />
+            ))}
           </View>
+        </View>
 
-          {/* Image selection buttons */}
-          <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={styles.recommendationsButton}
+          onPress={() => setShowRecommendations(true)}
+        >
+          <Text style={styles.recommendationsButtonText}>Ver Recomendaciones</Text>
+        </TouchableOpacity>
+
+        <Button 
+          mode="contained" 
+          onPress={takePhoto}
+          style={styles.uploadButton}
+          labelStyle={styles.uploadButtonText}
+        >
+          Subir foto frontal
+        </Button>
+      </View>
+
+      {/* Botones de acción */}
+      <View style={styles.actionButtons}>
+        <Button 
+          mode="outlined" 
+          icon="camera" 
+          onPress={takePhoto}
+          style={styles.actionButton}
+          labelStyle={styles.actionButtonText}
+        >
+          Tomar foto
+        </Button>
+        <Button 
+          mode="outlined" 
+          icon="image" 
+          onPress={pickImageFromGallery}
+          style={styles.actionButton}
+          labelStyle={styles.actionButtonText}
+        >
+          Galería
+        </Button>
+      </View>
+
+      {/* Modal de recomendaciones */}
+      <Modal
+        visible={showRecommendations}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowRecommendations(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Recomendaciones para tus fotos</Text>
+            <View style={styles.recommendationItem}>
+              <Text style={styles.recommendationText}>• Buena iluminación natural</Text>
+            </View>
+            <View style={styles.recommendationItem}>
+              <Text style={styles.recommendationText}>• Sin maquillaje</Text>
+            </View>
+            <View style={styles.recommendationItem}>
+              <Text style={styles.recommendationText}>• Rostro limpio y seco</Text>
+            </View>
+            <View style={styles.recommendationItem}>
+              <Text style={styles.recommendationText}>• Sin accesorios</Text>
+            </View>
+            <View style={styles.recommendationItem}>
+              <Text style={styles.recommendationText}>• Fondo neutro</Text>
+            </View>
+            
             <Button 
               mode="contained" 
-              icon="camera" 
-              onPress={takePhoto}
-              style={styles.cameraButton}
-              contentStyle={styles.buttonContent}
+              onPress={() => setShowRecommendations(false)}
+              style={styles.modalButton}
             >
-              Tomar foto
-            </Button>
-
-            <Button 
-              mode="contained" 
-              icon="image" 
-              onPress={pickImageFromGallery}
-              style={styles.galleryButton}
-              contentStyle={styles.buttonContent}
-            >
-              Galería
+              Entendido
             </Button>
           </View>
+        </View>
+      </Modal>
 
-          {frontImage && (
-            <View style={styles.previewContainer}>
-              <Image source={{ uri: frontImage.uri }} style={styles.previewImage} />
-              <Paragraph style={styles.previewText}>Vista previa</Paragraph>
-            </View>
-          )}
-        </Card.Content>
-      </Card>
-
-      <TouchableOpacity 
-            onPress={handleContinue} 
-            style={[styles.continueButton2, !frontImage && styles.disabledButton]}
-            disabled={!frontImage}
+      {/* Vista previa de imagen */}
+      {frontImage && (
+        <View style={styles.previewSection}>
+          <Image source={{ uri: frontImage.uri }} style={styles.previewImage} />
+          <Button 
+            mode="contained" 
+            onPress={handleContinue}
+            style={styles.continueButton}
+            labelStyle={styles.continueButtonText}
           >
-            <Text style={styles.continueButtonText}>Continuar</Text>
-          </TouchableOpacity>
+            Continuar
+          </Button>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -294,134 +368,200 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: '#ffece0',
+    padding: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    padding: 24,
+    marginBottom: 10,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 12,
+    width: 120,
+    height: 120,
+    left: 10,
+    zIndex: 2,
   },
-  title: {
-    color: '#6b0d29',
+  titleContainer: {
+    flex: 1,
+    backgroundColor: '#eb8c84',
+    borderRadius: 15,
+    marginLeft: -35,
+    height: 85,
+    overflow: 'hidden',
+  },
+  textPaddingWrapper: {
+    position: 'absolute',
+    right: 65,
+    width: '80%',
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingRight: 10,
+  },
+  mainTitle: {
+    color: '#ffece0',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    marginRight: 10,
+    width: '100%',
+    includeFontPadding: false,
+  },
+  horizontalLine: {
+    height: 4,
+    backgroundColor: '#eb8c84',
+    width: '95%',
+    alignSelf: 'center',
+    marginVertical: 8,
+    opacity: 0.9,
+  },
+  subtitle: {
+    color: '#d5582b',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 5,
-  },
-  subtitle: {
-    color: '#6b0d29',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   description: {
     color: '#6b0d29',
     fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 22,
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#ffe6e1',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    color: '#6b0d29',
-    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    
+    lineHeight: 18,
+    marginBottom: 8,
     textAlign: 'center',
+    width: '95%',
   },
-  instructions: {
-    color: '#6b0d29',
-    fontSize: 16,
-    marginBottom: 10,
-    fontWeight: '600',
+  exampleSection: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
-  exampleContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 20,
+  carouselContainer: {
+    alignItems: 'center',
+    marginBottom: 15,
   },
   exampleImage: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     borderRadius: 10,
-    marginRight: 15,
+    borderWidth: 2,
+    borderColor: '#a44230',
   },
-  exampleTextContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    gap: 8,
-  },
-  chip: {
-    marginBottom: 4,
-    backgroundColor: '#ffece0',
-  },
-  buttonContainer: {
+  dotsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    gap: 10,
+    justifyContent: 'center',
+    marginTop: 10,
   },
-  cameraButton: {
-    flex: 1,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  activeDot: {
     backgroundColor: '#a44230',
   },
-  galleryButton: {
-    flex: 1,
-    backgroundColor: '#cc5533',
+  recommendationsButton: {
+    marginVertical: 15,
   },
-  continueButtonText: {
-    color: '#ffece0',
-    fontSize: 16,
+  recommendationsButtonText: {
+    color: '#d5582b',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#ffece0',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    width: '90%',
+    
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#6b0d29',
+  },
+  recommendationItem: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  recommendationText: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#d5582b',
+    textAlign: 'center',
+    width: '80%',
+  },
+  modalButton: {
+    marginTop: 20,
+    backgroundColor: '#eb8c84',
+    width: '80%',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  actionButton: {
+    borderColor: '#a44230',
+    borderWidth: 2,
+    borderRadius: 25,
+    width: '45%',
+  },
+  actionButtonText: {
+    color: '#a44230',
     fontWeight: 'bold',
   },
-  buttonContent: {
-    paddingVertical: 8,
+  uploadButton: {
+    backgroundColor: '#eb8c84',
+    borderRadius: 15,
+    paddingVertical: 5,
+    width: '75%',
   },
-  previewContainer: {
+  uploadButtonText: {
+    color: '#ffece0',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  previewSection: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
   previewImage: {
     width: 150,
     height: 150,
-    borderRadius: 12,
+    borderRadius: 10,
+    marginBottom: 15,
     borderWidth: 2,
-    borderColor: '#cc5533',
-  },
-  previewText: {
-    color: '#6b0d29',
-    fontSize: 14,
-    marginTop: 5,
-    marginBottom: 8,
+    borderColor: '#a44230',
   },
   continueButton: {
     backgroundColor: '#a44230',
-    marginTop: 10,
+    borderRadius: 25,
+    paddingVertical: 5,
+    width: '80%',
   },
-  continueButton2: {
-    backgroundColor: '#a44230',
-    borderRadius: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-  },
-  continueButtonContent: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-  },
-  disabledButton: {
-    backgroundColor: '#cccccc',
+  continueButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   loadingText: {
     color: '#6b0d29',
     fontSize: 16,
     marginTop: 10,
-    textAlign: 'center',
   },
 });
 

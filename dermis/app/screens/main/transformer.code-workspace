@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "transformer",
+			"path": "../../../../../../transformer"
+		},
+		{
+			"name": "dermis-final-app",
+			"path": "../../../../.."
+		},
+		{
+			"path": "../../../../../../redes"
+		}
+	],
+	"settings": {}
+}

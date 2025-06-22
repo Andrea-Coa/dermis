@@ -141,7 +141,7 @@ const Register = () => {
           onChangeText={(text) => handleChange('contrasena', text)}
         />
 
-
+ {/*
       <Button 
           mode="contained" 
           style={styles.registerButton}
@@ -150,73 +150,104 @@ const Register = () => {
         >
           Registrarme
       </Button>
-
+*/}
         {/* Login Option */}
+        <View style={styles.buttonContainer}>
+  <TouchableOpacity onPress={goToLogin} style={styles.loginButton}>
+    <Text style={styles.loginButtonText}>Iniciar sesión</Text>
+  </TouchableOpacity>
+  
+  <TouchableOpacity onPress={handleSubmit} style={styles.loginButton}>
+    <Text style={styles.loginButtonText}>Registrarme</Text>
+  </TouchableOpacity>
+</View>
+        {/*
         <View style={styles.loginSection}>
           <Text style={styles.loginPrompt}>¿Ya tienes cuenta?</Text>
           <TouchableOpacity onPress={goToLogin}>
             <Text style={styles.loginLink}>Inicia sesión aquí</Text>
           </TouchableOpacity>
         </View>
+        */}
       </View>
     </ScrollView>
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#ffece0',
+    backgroundColor: '#ffdac5',
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 24,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 12,
+    width: 260, 
+    height: 260, 
+    marginBottom: 10,
+    alignSelf: 'center', // Para asegurar que esté centrado
   },
-  description: {
-    color: '#6b0d29',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  form: {
+    form: {
     width: '100%',
     alignItems: 'center',
-    gap: 12,
+    marginTop: 10,
+  },
+  description: {
+    color: '#d5582b',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
+    width: '98%',
   },
   input: {
-    backgroundColor: '#ffe6e1',
-    borderColor: '#cc5533',
-    borderWidth: 2,
-    borderRadius: 24,
+    backgroundColor: '#fbcec4',
+    borderColor: '#d5582b', 
+    borderWidth: 4,
+    borderRadius: 15,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    fontSize: 16,
+    fontSize: 18,
+    
+    fontWeight: 'bold',
+    width: '85%',
+    maxWidth: 265,
+    color: '#6b0d29',
+    marginBottom: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: '85%',
     maxWidth: 280,
-    color: '#6b0d29',
-    marginBottom: 10,
+    marginTop: 20,
   },
+  loginButton: {
+    padding: 10,
+  },
+  loginButtonText: {
+    color: '#d5582b',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  /*
   registerButton: {
     backgroundColor: '#a44230',
     borderRadius: 30,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     elevation: 3,
-    width: '85%',
-    maxWidth: 280,
-    alignItems: 'center',
-    marginTop: 10,
   },
   registerButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
   },
+  */
   loginSection: {
     marginTop: 30,
     alignItems: 'center',
@@ -233,5 +264,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
+
 
 export default Register;

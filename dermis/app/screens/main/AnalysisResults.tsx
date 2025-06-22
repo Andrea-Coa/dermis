@@ -48,7 +48,7 @@ export default function AnalysisResults() {
   const handleContinue = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.1.48:5001/preprocesar', {
+      const response = await fetch('http://172.20.143.115:5001/preprocesar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,9 +132,11 @@ export default function AnalysisResults() {
 
       {/* Skin Type Card */}
       <Surface style={styles.resultCard} elevation={3}>
+        <View style={styles.horizontalLine} />
         <View style={styles.cardHeader}>
           <Text variant="titleMedium" style={styles.cardTitle}>TIPO DE PIEL</Text>
         </View>
+        <View style={styles.horizontalLine} />
         <View style={styles.cardContent}>
           <View style={styles.resultBadge}>
             <Text style={styles.resultText}>{results.cnn.skinType}</Text>
@@ -227,6 +229,15 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 30,
+  },
+
+    horizontalLine: {
+    height: 4,
+    backgroundColor: '#eb8c84',
+    width: '95%',
+    alignSelf: 'center',
+    marginVertical: 8,
+    opacity: 0.9,
   },
   headerTop: {
     flexDirection: 'row',

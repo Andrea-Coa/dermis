@@ -96,7 +96,8 @@ const Login = () => {
       />
 
       <Text style={styles.description}>
-        ¡Qué bueno verte de nuevo! Inicia sesión para continuar cuidando tu piel
+        ¡ Qué bueno verte de nuevo !            
+        Inicia sesión para continuar con el cuidado tu piel
       </Text>
 
       <View style={styles.form}>
@@ -117,22 +118,21 @@ const Login = () => {
           value={formData.contrasena}
           onChangeText={(text) => handleChange('contrasena', text)}
         />
-      <Button 
-          mode="contained" 
-          style={styles.loginButton}
-          labelStyle={styles.loginButtonText}
-          onPress={handleSubmit}
-        >
-          Iniciar sesión
-      </Button>
-
-        {/* Register Option */}
-        <View style={styles.registerSection}>
-          <Text style={styles.registerPrompt}>¿No tienes cuenta?</Text>
-          <TouchableOpacity onPress={goToRegister}>
-            <Text style={styles.registerLink}>Regístrate aquí</Text>
+      <View style={styles.loginSection}>
+          <TouchableOpacity onPress={handleSubmit}>
+            <Text style={styles.loginLink}>Iniciar sesión</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Register Option */}
+     <View>
+    <TouchableOpacity onPress={goToRegister}>
+      <View style={styles.registerTextContainer}>
+        <Text style={styles.registerPrompt}>¿No tienes cuenta?</Text>
+        <Text style={styles.registerLink}>Regístrate</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
       </View>
     </ScrollView>
   );
@@ -140,42 +140,45 @@ const Login = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#ffece0', // durazno claro
+    flex: 1, // Cambiado de flexGrow a flex
+    backgroundColor: '#ffdac5',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: 24,// Añadido para posicionamiento absoluto de hijos
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 260,
+    height: 260,
     marginBottom: 12,
   },
   description: {
-    color: '#6b0d29', // rojo vino oscuro
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#d5582b',
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 22,
+    marginBottom: 10,
+    lineHeight: 24,
+    width: '95%',
   },
   form: {
     width: '100%',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    marginBottom: 60, // Espacio para el botón de registro
   },
   input: {
-    backgroundColor: '#ffe6e1', // rosado claro
-    borderColor: '#cc5533',
-    borderWidth: 2,
-    borderRadius: 24,
+    backgroundColor: '#fbcec4',
+    borderColor: '#d5582b',
+    borderWidth: 4,
+    borderRadius: 15,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     width: '85%',
-    maxWidth: 280,
+    maxWidth: 265,
     color: '#6b0d29',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   loginButton: {
     backgroundColor: '#a44230',
@@ -192,21 +195,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  registerSection: {
-    marginTop: 30,
+  // ESTILOS CORREGIDOS PARA EL REGISTRO (parte inferior derecha)
+  
+  registerTextContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   registerPrompt: {
     color: '#6b0d29',
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: 16, // Aumentado ligeramente
+    marginRight: 4,
   },
   registerLink: {
     color: '#a44230',
-    fontSize: 16,
+    fontSize: 16, // Aumentado ligeramente
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  // (Mantén los otros estilos que no han cambiado)
+  loginSection: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  loginLink: {
+    color: '#d5582b',
+    fontSize: 20,
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
 });
-
 export default Login;
