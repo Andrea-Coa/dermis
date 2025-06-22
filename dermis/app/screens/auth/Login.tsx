@@ -22,7 +22,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const Login = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { setUserId } = useUser();
+  const { loginAndSetStatus } = useUser();
   const [formData, setFormData] = useState({
     correo: '',
     contrasena: '',
@@ -38,41 +38,44 @@ const Login = () => {
         email: formData.correo,
         password: formData.contrasena,
       };
-
-      // --- REAL RESPONSE BELOW ---
-      // Replace with your actual login endpoint
+  
       const response = await fetch('https://70i447ofic.execute-api.us-east-1.amazonaws.com/login_users_dermis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+  
       const result = await response.json();
       console.log('Respuesta completa:', response);
       console.log('Cuerpo:', result);
-
+  
       if (response.ok) {
         Alert.alert('✅ ¡Bienvenid@ de vuelta!');
-        await AsyncStorage.setItem('user_id', result.user_id);
-        setUserId(result.user_id);
-        // navigation.navigate('FR_efficient_net', { _user_id: result.user_id });
+  
+        // 🔍 Check if user has a routine
+        try {
+          const routineResponse = await fetch(
+            `https://o1f915v3gh.execute-api.us-east-1.amazonaws.com/default/routines?user_id=${result.user_id}`
+          );
+  
+          if (routineResponse.ok) {
+            console.log('🎯 Rutina encontrada');
+            await loginAndSetStatus(result.user_id, true);
+          } else if (routineResponse.status === 404) {
+            console.log('🕵️‍♀️ Rutina no encontrada');
+            await loginAndSetStatus(result.user_id, false);
+          } else {
+            console.warn('⚠️ Error inesperado al verificar rutina');
+            await loginAndSetStatus(result.user_id, false);
+          }
+        } catch (routineError) {
+          console.error('❌ Error al consultar rutina:', routineError);
+          await loginAndSetStatus(result.user_id, false); // fallback
+        }
+  
       } else {
         Alert.alert('❌ Error', result.error || 'Credenciales incorrectas');
       }
-
-      // --- MOCKED RESPONSE BELOW ---
-      /*
-      const result = {
-        user_id: 'mock-user-123',
-      };
-
-      console.log('Respuesta simulada:', result);
-
-      Alert.alert('✅ ¡Bienvenid@ de vuelta!');
-      await AsyncStorage.setItem('user_id', result.user_id);
-      setUserId(result.user_id);
-      // navigation.navigate('FR_efficient_net', { _user_id: result.user_id });
-      */
     } catch (err) {
       if (err instanceof Error) {
         Alert.alert('❌ Error de red', err.message);
@@ -81,7 +84,8 @@ const Login = () => {
       }
     }
   };
-
+  
+  
   const goToRegister = () => {
     navigation.replace('Register');
   };

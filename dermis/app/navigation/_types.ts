@@ -5,13 +5,31 @@ export type SafeImagePickerAsset = {
     base64?: string;
   };
 
+// export type Product = {
+//     product_id: string;
+//     name: string;
+//     brand: string;
+//     limpiar: boolean;
+//     tratar: boolean;
+//     proteger: boolean;
+//     image_base64: string | null;
+// };
+
 export type Product = {
-  id: number;
-  title: string;
+  product_id: string;
+  name: string;
+  brand: string;
+  price: number;
+  ingredients: string[]; // assuming parsed JSON
   description: string;
-  image: SafeImagePickerAsset;
-  step: string;
+  stars: number;
+  num_reviews: number;
+  limpiar: boolean;
+  tratar: boolean;
+  proteger: boolean;
+  image_base64: string | null;
 };
+
 
 export type RecommendedProduct = {
   step: string; // e.g. "cleansers", "moisturizers", etc.

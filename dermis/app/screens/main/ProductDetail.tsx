@@ -7,11 +7,6 @@ import ProductDetailContent from '../../components/ProductDetailContent';
 import { Product, RootStackParamList } from '../../navigation/_types';
 
 type ProductDetailRouteProp = RouteProp<RootStackParamList, 'ProductDetail'>;
-/*
-  Esta es la screen que se muestra al dar clic en un producto en Routine.tsx.
-  Todavía falta implementar la lógica para que llame a un lambda y recupere
-  más información del producto, así como su imagen.
-*/
 
 export default function ProductDetailScreen() {
   const route = useRoute<ProductDetailRouteProp>();
@@ -20,6 +15,15 @@ export default function ProductDetailScreen() {
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  // Get the product steps for the subtitle
+  const getProductSteps = (product: Product): string => {
+    const steps = [];
+    if (product.limpiar) steps.push('Limpiar');
+    if (product.tratar) steps.push('Tratar');
+    if (product.proteger) steps.push('Proteger');
+    return steps.join(' • ');
   };
 
   return (
@@ -35,7 +39,7 @@ export default function ProductDetailScreen() {
         />
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Detalle del Producto</Text>
-          <Text style={styles.headerSubtitle}>{product.step}</Text>
+          <Text style={styles.headerSubtitle}>{getProductSteps(product)}</Text>
         </View>
         <View style={styles.headerSpacer} />
       </View>

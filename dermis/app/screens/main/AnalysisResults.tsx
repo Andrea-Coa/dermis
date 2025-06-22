@@ -48,7 +48,12 @@ export default function AnalysisResults() {
   const handleContinue = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://172.20.143.115:5001/preprocesar', {
+      const userId = await AsyncStorage.getItem("user_id");
+      if (!userId) {
+        throw new Error("User ID not found in storage");
+      }
+  
+      const preprocessingResponse = await fetch('http://192.168.1.48:5001/preprocesar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,48 +64,69 @@ export default function AnalysisResults() {
           is_sensitive: sensitive ? "true" : "false",
         }),
       });
-      
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  
+      if (!preprocessingResponse.ok) {
+        throw new Error(`Preprocessing API error: ${preprocessingResponse.status}`);
       }
-
-      const data = await response.json();
-      console.log('Raw API response (may vary by skin type):', data);
-
-      // Transformar la data a un objeto más entendible
-      const recommendedProducts = Object.entries(data as Record<string, { name: string; ingredients: string }>).map(
-        ([step, details]) => ({
-          step,
-          name: details.name,
-          ingredients: JSON.parse(details.ingredients.replace(/'/g, '"')) as string[],
-        })
+  
+      const preprocessedData = await preprocessingResponse.json();
+      console.log('✅ Preprocessing result:', preprocessedData);
+  
+      // Fix: Cast response to known type before mapping
+      const productNames = (Object.values(preprocessedData) as { name: string }[]).map(
+        (product) => product.name
       );
-      console.log(recommendedProducts);
-      await AsyncStorage.setItem("results", JSON.stringify(recommendedProducts));
+  
+      // 🧠 Call your Lambda to create the routine
+      const lambdaResponse = await fetch('https://o1f915v3gh.execute-api.us-east-1.amazonaws.com/default/routines', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          name: "rutina facial", // 🔹 placeholder name
+          product_names: productNames,
+        }),
+      });
+  
+      if (!lambdaResponse.ok) {
+        const body = await lambdaResponse.json();
 
-      // Navigate to Routine screen and pass the products
-      // navigation.navigate('Routine', { recommendedProducts });
-      // Quitamos navigation.navigate porque setHasCompletedOnboarding lo maneja mejor
+        console.log(body)
+        throw new Error(`Lambda API error: ${lambdaResponse.status}`);
+      }
+  
+      const lambdaData = await lambdaResponse.json();
+      console.log("✅ Routine created:", lambdaData);
+  
+      // await AsyncStorage.setItem("routine_id", lambdaData.routine_id);
       await setHasCompletedOnboarding(true);
-
-
+  
     } catch (error) {
-      console.error('❌ Error calling skincare API:', error);
-      Alert.alert('Error', 'Ocurrió un error al procesar los resultados');
+      console.error('❌ Error during routine creation:', error);
+      Alert.alert('Error', 'Ocurrió un error al crear la rutina');
     } finally {
       setLoading(false);
     }
   };
-
+  
+  
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
         <ActivityIndicator animating={true} size="large" />
-        <Text style={styles.loadingText}>Creando tu rutina...</Text>
+        <Text style={[styles.loadingText, { textAlign: 'center', marginTop: 16 }]}>
+          Estamos creando tu rutina personalizada. Esto puede tomar unos segundos, ¡pero solo es necesario una vez!
+        </Text>
+        <Text style={[styles.loadingText, { marginTop: 8, fontSize: 13, color: '#555', textAlign: 'center' }]}>
+          Gracias por tu paciencia 💆‍♀️✨
+        </Text>
       </View>
     );
   }
+  
+  
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

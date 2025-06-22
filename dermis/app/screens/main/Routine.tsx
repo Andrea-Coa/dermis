@@ -1,90 +1,82 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
-import { Text } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ProductCard from '../../components/ProductCard';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootStackParamList, Product } from '../../navigation/_types';
 
-import ProductCard from '../../components/ProductCard';
-import { MainStackParamList } from '../../navigation/MainAppStack';
-import { SafeImagePickerAsset } from '../../navigation/_types';
-
-// The recommended product structure (as saved in AsyncStorage)
-type RecommendedProduct = {
-  step: string;
-  name: string;
-  ingredients: string[];
+const CATEGORY_LABELS: Record<'limpiar' | 'tratar' | 'proteger', string> = {
+  limpiar: 'LIMPIEZA',
+  tratar: 'TRATAMIENTO',
+  proteger: 'PROTECCIÓN',
 };
 
-type RoutineNavigationProp = NativeStackNavigationProp<
-  MainStackParamList,
-  'DrawerNavigator'
->;
-
 export default function RoutineScreen() {
-  const [recommended, setRecommended] = useState<RecommendedProduct[]>([]);
-  const navigation = useNavigation<RoutineNavigationProp>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
-    const loadFromAsyncStorage = async () => {
+    const fetchRoutine = async () => {
       try {
-        const stored = await AsyncStorage.getItem("results");
-        if (stored) {
-          const parsed = JSON.parse(stored) as RecommendedProduct[];
-          setRecommended(parsed);
-        } else {
-          console.warn("No recommended products found in AsyncStorage.");
-        }
+        const userId = await AsyncStorage.getItem('user_id');
+        if (!userId) throw new Error('user_id not found');
+
+        const response = await fetch(`https://o1f915v3gh.execute-api.us-east-1.amazonaws.com/default/routines?user_id=${userId}`);
+        if (!response.ok) throw new Error(`Error fetching routine: ${response.status}`);
+
+        const data = await response.json();
+        setProducts(data.products || []);
       } catch (error) {
-        console.error("Failed to load from AsyncStorage:", error);
+        console.error('Failed to fetch routine:', error);
       }
     };
-
-    loadFromAsyncStorage();
+    fetchRoutine();
   }, []);
+  const handlePressProductCard = (product: Product) => {
+    navigation.navigate('ProductDetail', { product });
+  };
 
-  const capitalizeWords = (text: string) => {
-    return text.replace(/\b\w/g, char => char.toUpperCase());
+  const groupByCategory = (category: keyof Pick<Product, 'limpiar' | 'tratar' | 'proteger'>) => {
+    return products.filter((p) => p[category]);
+  };
+
+  const renderCategory = (category: 'limpiar' | 'tratar' | 'proteger') => {
+    const grouped = groupByCategory(category);
+    if (grouped.length === 0) return null;
+  
+    return (
+      <View style={styles.categoryBox}>
+        <Text style={styles.categoryTitle}>{CATEGORY_LABELS[category]}</Text>
+        {grouped.map((product) => {
+          console.log(`📦 Ingredients for ${product.name}:`, product.ingredients);
+  
+          return (
+            <ProductCard
+              key={product.product_id}
+              name={product.name}
+              brand={product.brand}
+              category={category}
+              imageUri={product.image_base64 ? `data:image/jpeg;base64,${product.image_base64}` : ''}
+              onPress={() => handlePressProductCard(product)}
+            />
+          );
+        })}
+      </View>
+    );
   };
   
 
-  const handleProductPress = (product: RecommendedProduct) => {
-    // Optional: Navigate to detail screen or show more info
-    // navigation.navigate('ProductDetail', { product });
-    console.log("Navigation not implemented yet");
-  };
-
-  // temporal para mostrar imágenes
-  const stepToImage: Record<string, any> = {
-    Limpiar: require('../../../assets/cleanser.jpg'),
-    Tratar: require('../../../assets/treatment.jpg'),
-    Proteger: require('../../../assets/sunscreen.jpg'),
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Tu Rutina de Cuidado
-      </Text>
+      <Text style={styles.title}>Tu Rutina de Cuidado</Text>
       <Text style={styles.subtitle}>
-        Basado en tu análisis, te recomendamos seguir utilizar estos productos para mejorar y proteger tu piel.
+        Basado en tu análisis, te recomendamos los siguientes productos:
       </Text>
 
-      {recommended.map((product, index) => (
-        <ProductCard
-          key={index}
-          name={capitalizeWords(product.name)}
-          ingredients={product.ingredients}
-          step={product.step}
-          image={{
-            uri: Image.resolveAssetSource(stepToImage[product.step] || require('../../../assets/sunscreen.jpg')).uri,
-            width: 100,
-            height: 100,
-          }}
-          onPress={() => handleProductPress(product)}
-      />
-      
-      ))}
+      {renderCategory('limpiar')}
+      {renderCategory('tratar')}
+      {renderCategory('proteger')}
     </ScrollView>
   );
 }
@@ -112,5 +104,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
     paddingHorizontal: 10,
+  },
+  categoryBox: {
+    marginBottom: 30,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#a44230',
+    marginBottom: 12,
+    marginLeft: 8,
   },
 });

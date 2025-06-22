@@ -156,7 +156,7 @@ export default function ProfileScreen() {
 
       </Surface>
 
-      <Button
+      {/* <Button
         mode="outlined"
         style={styles.logoutButton}
         labelStyle={styles.logoutButtonText}
@@ -164,15 +164,15 @@ export default function ProfileScreen() {
         icon="logout"
       >
         Cerrar Sesión
-      </Button>
+      </Button> */}
       <Button
         mode="outlined"
         style={styles.logoutButton}
         labelStyle={styles.logoutButtonText}
         onPress={handleForgetToken}
-        icon="refresh"
+        icon="logout"
         >
-        Olvidar token
+        Cerrar Sesión
         </Button>
     </ScrollView>
   );

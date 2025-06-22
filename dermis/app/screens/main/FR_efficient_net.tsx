@@ -99,12 +99,13 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
         name: 'foto.jpg',
       } as any);
   
-      const response = await fetch('http://192.168.1.81:5000/api/analyze-skin/logistic_regression_v1', {
+      const response = await fetch('http://192.168.1.48:5000/api/analyze-skin/logistic_regression_v1', {
         method: 'POST',
         body: formData,
       });
   
       const data = await response.json();
+      console.log(data);
   
       if (!response.ok) {
         throw new Error(data.message || 'Error del servidor');

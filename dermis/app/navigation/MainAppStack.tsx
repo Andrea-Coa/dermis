@@ -7,22 +7,22 @@ import RoutineScreen from '../screens/main/Routine';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import ProductDetailScreen from '../screens/main/ProductDetail';
 import CustomDrawer from '../components/CustomDrawer';
-import { SafeImagePickerAsset, RecommendedProduct } from './_types';
+import { SafeImagePickerAsset, RecommendedProduct, Product } from './_types';
 
 // Type definitions
-type Product = {
-  id: number;
-  title: string;
-  description: string;
-  image: SafeImagePickerAsset;
-  step: string;
-};
+// type Product = {
+//   id: number;
+//   title: string;
+//   description: string;
+//   image: SafeImagePickerAsset;
+//   step: string;
+// };
 
 // Stack Navigator Types (includes all screens including modal-like screens)
 export type MainStackParamList = {
   DrawerNavigator: undefined;
   ProductDetail: { product: Product };
-  Routine: { recommendedProducts: RecommendedProduct[] }; // ✅ add this
+  // Routine: { recommendedProducts: RecommendedProduct[] }; // ✅ add this
 };
 
 // Drawer Navigator Types (only drawer screens)
