@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { Text, Surface, Chip } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { Text, Surface } from 'react-native-paper';
 import { Product } from '../navigation/_types';
 
 type Props = {
@@ -20,18 +20,11 @@ const pastelColors = [
 ];
 
 export default function ProductDetailContent({ product }: Props) {
+  const [showAllIngredients, setShowAllIngredients] = useState(false);
+
   // Generate consistent color based on product name
   const colorIndex = product.name.length % pastelColors.length;
   const backgroundColor = pastelColors[colorIndex];
-
-  // Get product steps
-  const getProductSteps = (): string[] => {
-    const steps = [];
-    if (product.limpiar) steps.push('Limpiar');
-    if (product.tratar) steps.push('Tratar');
-    if (product.proteger) steps.push('Proteger');
-    return steps;
-  };
 
   // Format price
   const formatPrice = (price: number): string => {
@@ -56,26 +49,49 @@ export default function ProductDetailContent({ product }: Props) {
     
     return stars.join(' ');
   };
-  // console.log(product);
-  console.log(product.product_id);
+
+  // Helper function to capitalize first letter of each word (title case)
+  const toTitleCase = (str: string): string => {
+    return str.replace(/\w\S*/g, (txt) => 
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+  };
+
+  // Helper function to capitalize first letter of sentences
+  const capitalizeSentences = (str: string): string => {
+    return str.replace(/(^\w|[.!?]\s*\w)/g, (match) => match.toUpperCase());
+  };
+
+  // Format ingredients with toggle functionality
+  const formatIngredients = () => {
+    if (!product.ingredients || product.ingredients.length === 0) {
+      return 'No disponible';
+    }
+
+    const ingredientsText = product.ingredients.join(', ');
+    const maxLength = 100; // Adjust this value as needed
+
+    if (ingredientsText.length <= maxLength || showAllIngredients) {
+      return ingredientsText;
+    }
+
+    return ingredientsText.substring(0, maxLength) + '...';
+  };
+
+  const shouldShowToggle = () => {
+    if (!product.ingredients || product.ingredients.length === 0) {
+      return false;
+    }
+    const ingredientsText = product.ingredients.join(', ');
+    return ingredientsText.length > 100;
+  };
+
+  console.log(product.description);
 
   return (
     <View style={styles.container}>
       {/* Header Section with Image */}
       <Surface style={[styles.headerCard, { backgroundColor }]} elevation={3}>
-        <View style={styles.stepContainer}>
-          {getProductSteps().map((step, index) => (
-            <Chip 
-              key={index}
-              style={styles.stepChip} 
-              textStyle={styles.stepChipText}
-              mode="flat"
-            >
-              {step.toUpperCase()}
-            </Chip>
-          ))}
-        </View>
-        
         <View style={styles.imageContainer}>
           {product.image_base64 ? (
             <Image 
@@ -91,8 +107,8 @@ export default function ProductDetailContent({ product }: Props) {
         </View>
         
         <View style={styles.titleSection}>
-          <Text style={styles.productTitle}>{product.name}</Text>
-          <Text style={styles.productBrand}>{product.brand}</Text>
+          <Text style={styles.productTitle}>{toTitleCase(product.name)}</Text>
+          <Text style={styles.productBrand}>{toTitleCase(product.brand)}</Text>
           <Text style={styles.productPrice}>{formatPrice(product.price)}</Text>
         </View>
       </Surface>
@@ -107,55 +123,31 @@ export default function ProductDetailContent({ product }: Props) {
         </View>
       </Surface>
 
-      {/* Description Section */}
-      <Surface style={styles.descriptionCard} elevation={2}>
-        <Text style={styles.sectionTitle}>Descripción</Text>
-        <Text style={styles.descriptionText}>{product.description}</Text>
-      </Surface>
+      {/* Description Section - Only show if description exists and is not empty */}
+      {product.description && product.description.trim() !== '' && (
+        <Surface style={styles.descriptionCard} elevation={2}>
+          <Text style={styles.sectionTitle}>Descripción</Text>
+          <Text style={styles.descriptionText}>{capitalizeSentences(product.description)}</Text>
+        </Surface>
+      )}
 
       {/* Ingredients Section */}
       <Surface style={styles.ingredientsCard} elevation={2}>
         <Text style={styles.sectionTitle}>Ingredientes</Text>
-        <View style={styles.ingredientsList}>
-          {product.ingredients.map((ingredient, index) => (
-            <View key={index} style={styles.ingredientItem}>
-              <Text style={styles.ingredientBullet}>•</Text>
-              <Text style={styles.ingredientText}>{ingredient}</Text>
-            </View>
-          ))}
-        </View>
-      </Surface>
-
-      {/* Usage Instructions Section */}
-      <Surface style={styles.instructionsCard} elevation={2}>
-        <Text style={styles.sectionTitle}>Modo de Uso</Text>
-        <Text style={styles.instructionsText}>
-          {getUsageInstructions(getProductSteps())}
-        </Text>
+        <Text style={styles.ingredientsText}>{formatIngredients()}</Text>
+        {shouldShowToggle() && (
+          <TouchableOpacity 
+            style={styles.toggleButton}
+            onPress={() => setShowAllIngredients(!showAllIngredients)}
+          >
+            <Text style={styles.toggleButtonText}>
+              {showAllIngredients ? 'Ver menos' : 'Ver más'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </Surface>
     </View>
   );
-}
-
-// Helper function to generate usage instructions based on product steps
-function getUsageInstructions(steps: string[]): string {
-  if (steps.length === 0) return 'Sigue las instrucciones del fabricante para obtener mejores resultados.';
-  
-  let instructions = '';
-  
-  if (steps.includes('Limpiar')) {
-    instructions += 'LIMPIAR: Aplica sobre la piel húmeda, masajea suavemente en movimientos circulares y enjuaga con agua tibia. ';
-  }
-  
-  if (steps.includes('Tratar')) {
-    instructions += 'TRATAR: Aplica unas gotas sobre la piel limpia y seca. Masajea suavemente hasta su completa absorción. ';
-  }
-  
-  if (steps.includes('Proteger')) {
-    instructions += 'PROTEGER: Aplica generosamente sobre toda la cara y cuello 15 minutos antes de la exposición solar. Reaplica cada 2 horas. ';
-  }
-  
-  return instructions.trim();
 }
 
 const styles = StyleSheet.create({
@@ -169,21 +161,6 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     overflow: 'hidden',
-  },
-  stepContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-    justifyContent: 'center',
-  },
-  stepChip: {
-    backgroundColor: 'rgba(164, 66, 48, 0.1)',
-  },
-  stepChipText: {
-    color: '#a44230',
-    fontWeight: 'bold',
-    fontSize: 12,
   },
   imageContainer: {
     marginBottom: 20,
@@ -261,11 +238,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
   },
-  instructionsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -277,29 +249,18 @@ const styles = StyleSheet.create({
     color: '#666666',
     lineHeight: 22,
   },
-  ingredientsList: {
-    gap: 8,
-  },
-  ingredientItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  ingredientBullet: {
-    fontSize: 16,
-    color: '#a44230',
-    fontWeight: 'bold',
-    marginTop: 1,
-  },
-  ingredientText: {
-    fontSize: 14,
-    color: '#666666',
-    flex: 1,
-    lineHeight: 20,
-  },
-  instructionsText: {
+  ingredientsText: {
     fontSize: 14,
     color: '#666666',
     lineHeight: 22,
+  },
+  toggleButton: {
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  toggleButtonText: {
+    fontSize: 14,
+    color: '#a44230',
+    fontWeight: '600',
   },
 });

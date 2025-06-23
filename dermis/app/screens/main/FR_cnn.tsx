@@ -178,28 +178,28 @@ const FR_cnn: React.FC = () => {
             <View style={[styles.stepCircle]}>
               <Text style={styles.stepNumber}>1</Text>
             </View>
-            <Text style={styles.stepLabel}>Frontal</Text>
+            <Text style={styles.stepLabel}>Condiciones</Text>
           </View>
           <View style={styles.progressLine} />
           <View style={styles.progressStep}>
             <View style={[styles.stepCircle, styles.activeStep]}>
               <Text style={styles.stepNumber}>2</Text>
             </View>
-            <Text style={styles.stepLabel}>Lateral</Text>
+            <Text style={styles.stepLabel}>Tipo de piel</Text>
           </View>
           <View style={styles.progressLine} />
           <View style={styles.progressStep}>
             <View style={styles.stepCircle}>
               <Text style={styles.stepNumber}>3</Text>
             </View>
-            <Text style={styles.stepLabel}>Rutina</Text>
+            <Text style={styles.stepLabel}>Sensibilidad</Text>
           </View>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerContainer}>
-          <Image source={require('../../../assets/circle_logo_pinkbg.png')} style={styles.logo} />
+          <Image source={require('../../../assets/logo_circle.png')} style={styles.logo} />
           <Text style={styles.headerTitle}>Reconocimiento facial</Text>
         </View>
 
@@ -298,7 +298,7 @@ const FR_cnn: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffece0',
+    backgroundColor: '#ffffff',
   },
   progressContainer: {
     backgroundColor: '#FFFFFF',
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   descriptionContainer: {
-    backgroundColor: '#fcd4c2',
+    backgroundColor: '#ffece0',
     borderRadius: 15,
     padding: 20,
     marginBottom: 30,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   photoSection: {
-    backgroundColor: '#fcd4c2',
+    backgroundColor: '#ffece0',
     borderRadius: 20,
     padding: 25,
     alignItems: 'center',

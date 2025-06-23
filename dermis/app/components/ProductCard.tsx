@@ -26,8 +26,8 @@ export default function ProductCard({ name, brand, category, imageUri, onPress }
           />
           <View style={styles.textContainer}>
           <Text style={styles.productTitle}>{capitalizeWords(name)}</Text>
-          <Text style={styles.brandText}>{brand}</Text>
-            <Text style={styles.categoryText}>{category.toUpperCase()}</Text>
+          <Text style={styles.brandText}>{capitalizeWords(brand)}</Text>
+            {/* <Text style={styles.categoryText}>{category.toUpperCase()}</Text> */}
           </View>
         </View>
       </Surface>

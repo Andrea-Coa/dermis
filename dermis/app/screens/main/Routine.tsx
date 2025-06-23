@@ -33,24 +33,28 @@ export default function RoutineScreen() {
     };
     fetchRoutine();
   }, []);
+
   const handlePressProductCard = (product: Product) => {
     navigation.navigate('ProductDetail', { product });
   };
 
-  const groupByCategory = (category: keyof Pick<Product, 'limpiar' | 'tratar' | 'proteger'>) => {
-    return products.filter((p) => p[category]);
+  const groupByCategory = (category: keyof Pick<Product, 'limpiar' | 'tratar' | 'proteger'>, usedProductIds: Set<string>) => {
+    return products.filter((p) => p[category] && !usedProductIds.has(p.product_id));
   };
 
-  const renderCategory = (category: 'limpiar' | 'tratar' | 'proteger') => {
-    const grouped = groupByCategory(category);
+  const renderCategory = (category: 'limpiar' | 'tratar' | 'proteger', usedProductIds: Set<string>) => {
+    const grouped = groupByCategory(category, usedProductIds);
     if (grouped.length === 0) return null;
-  
+
+    // Add these product IDs to the used set
+    grouped.forEach(product => usedProductIds.add(product.product_id));
+
     return (
       <View style={styles.categoryBox}>
         <Text style={styles.categoryTitle}>{CATEGORY_LABELS[category]}</Text>
         {grouped.map((product) => {
           console.log(`📦 Ingredients for ${product.name}:`, product.ingredients);
-  
+
           return (
             <ProductCard
               key={product.product_id}
@@ -65,7 +69,8 @@ export default function RoutineScreen() {
       </View>
     );
   };
-  
+
+  const usedProductIds = new Set<string>();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -74,9 +79,9 @@ export default function RoutineScreen() {
         Basado en tu análisis, te recomendamos los siguientes productos:
       </Text>
 
-      {renderCategory('limpiar')}
-      {renderCategory('tratar')}
-      {renderCategory('proteger')}
+      {renderCategory('limpiar', usedProductIds)}
+      {renderCategory('tratar', usedProductIds)}
+      {renderCategory('proteger', usedProductIds)}
     </ScrollView>
   );
 }

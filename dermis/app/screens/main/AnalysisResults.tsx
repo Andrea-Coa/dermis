@@ -114,12 +114,12 @@ export default function AnalysisResults() {
   
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
-        <ActivityIndicator animating={true} size="large" />
-        <Text style={[styles.loadingText, { textAlign: 'center', marginTop: 16 }]}>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator animating={true} size="large" color="#d5582b" />
+        <Text style={styles.loadingText}>
           Estamos creando tu rutina personalizada. Esto puede tomar unos segundos, ¡pero solo es necesario una vez!
         </Text>
-        <Text style={[styles.loadingText, { marginTop: 8, fontSize: 13, color: '#555', textAlign: 'center' }]}>
+        <Text style={styles.loadingSubtext}>
           Gracias por tu paciencia 💆‍♀️✨
         </Text>
       </View>
@@ -129,190 +129,183 @@ export default function AnalysisResults() {
   
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Header with Logo and Logout */}
-      <View style={styles.headerContainer}>
-        <View style={styles.headerTop}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../../assets/logo_yes.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text variant="titleMedium" style={styles.logoText}>
-              RECONOCIMIENTO{'\n'}FACIAL
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Results Title */}
-      <Text variant="headlineMedium" style={styles.resultsTitle}>
-        RESULTADOS
-      </Text>
-      
-      <Text style={styles.subtitle}>
-        Hemos detectado las siguientes condiciones y un tipo cosmético de piel 
-        para tu rostro. Estas características serán utilizadas para crear tu rutina de cuidado de la piel.
-      </Text>
-
-      {/* Skin Type Card */}
-      <Surface style={styles.resultCard} elevation={3}>
-        <View style={styles.horizontalLine} />
-        <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.cardTitle}>TIPO DE PIEL</Text>
-        </View>
-        <View style={styles.horizontalLine} />
-        <View style={styles.cardContent}>
-          <View style={styles.resultBadge}>
-            <Text style={styles.resultText}>{results.cnn.skinType}</Text>
-          </View>
-          <Text style={styles.confidenceText}>
-            Confianza: {(results.cnn.confidence * 100).toFixed(1)}%
-          </Text>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+        {/* Header with Logo */}
+        <View style={styles.headerContainer}>
           <Image 
-            source={{ uri: results.cnn.inputImage.uri }} 
-            style={styles.analysisImage} 
+            source={require('../../../assets/logo_circle.png')} 
+            style={styles.logo}
+            resizeMode="contain"
           />
+          <Text style={styles.headerTitle}>Reconocimiento facial</Text>
         </View>
-      </Surface>
 
-      {/* Conditions Card */}
-      <Surface style={styles.resultCard} elevation={3}>
-        <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.cardTitle}>CONDICIONES</Text>
+        {/* Results Title */}
+        <Text style={styles.resultsTitle}>RESULTADOS</Text>
+        
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>
+            Hemos detectado las siguientes condiciones y un tipo cosmético de piel 
+            para tu rostro. Estas características serán utilizadas para crear tu rutina de cuidado de la piel.
+          </Text>
         </View>
-        <View style={styles.cardContent}>
-          {results.eff.conditions.length > 0 ? (
-            <View style={styles.conditionsContainer}>
-              {results.eff.conditions.map((condition, index) => (
-                <View key={index} style={styles.conditionBadge}>
-                  <Text style={styles.conditionText}>{condition}</Text>
-                </View>
-              ))}
+
+        {/* Skin Type Card */}
+        <View style={styles.resultCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>TIPO DE PIEL</Text>
+          </View>
+          <View style={styles.cardContent}>
+            <View style={styles.resultBadge}>
+              <Text style={styles.resultText}>{results.cnn.skinType}</Text>
             </View>
-          ) : (
-            <View style={styles.noConditionsContainer}>
-              <Text style={styles.noConditionsText}>
-                No se detectó ninguna condición de la piel.
+            <Text style={styles.confidenceText}>
+              Confianza: {(results.cnn.confidence * 100).toFixed(1)}%
+            </Text>
+            <Image 
+              source={{ uri: results.cnn.inputImage.uri }} 
+              style={styles.analysisImage} 
+            />
+          </View>
+        </View>
+
+        {/* Conditions Card */}
+        <View style={styles.resultCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>CONDICIONES</Text>
+          </View>
+          <View style={styles.cardContent}>
+            {results.eff.conditions.length > 0 ? (
+              <View style={styles.conditionsContainer}>
+                {results.eff.conditions.map((condition, index) => (
+                  <View key={index} style={styles.conditionBadge}>
+                    <Text style={styles.conditionText}>{condition}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.noConditionsContainer}>
+                <Text style={styles.noConditionsText}>
+                  No se detectó ninguna condición de la piel.
+                </Text>
+              </View>
+            )}
+            <Image 
+              source={{ uri: results.eff.inputImage.uri }} 
+              style={styles.analysisImage} 
+            />
+          </View>
+        </View>
+        
+       {/* Sensitive Skin Card */}
+       <View style={styles.resultCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>SENSIBILIDAD</Text>
+          </View>
+          <View style={styles.cardContent}>
+            <View style={styles.resultBadge}>
+              <Text style={styles.resultText}>
+                {route.params.sensitive ? 'Piel Sensible' : 'Piel No Sensible'}
               </Text>
             </View>
-          )}
-          <Image 
-            source={{ uri: results.eff.inputImage.uri }} 
-            style={styles.analysisImage} 
-          />
-        </View>
-      </Surface>
-      
-     {/* Sensitive Skin Card */}
-     <Surface style={styles.resultCard} elevation={3}>
-        <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.cardTitle}>SENSIBILIDAD</Text>
-        </View>
-        <View style={styles.cardContent}>
-          <View style={styles.resultBadge}>
-            <Text style={styles.resultText}>
-              {route.params.sensitive ? 'Piel Sensible' : 'Piel No Sensible'}
-            </Text>
           </View>
         </View>
-      </Surface>
 
-      {/* Action Buttons */}
-      <View style={styles.actionContainer}>
-        <Button 
-          mode="contained" 
-          style={styles.continueButton}
-          labelStyle={styles.continueButtonText}
-          onPress={handleContinue}
-        >
-          Siguiente
-        </Button>
-        
-        {/* <Button 
-          mode="outlined" 
-          style={styles.logoutButtonBottom}
-          labelStyle={styles.logoutButtonBottomText}
-          onPress={handleLogout}
-          icon="logout"
-        >
-          Cerrar Sesión
-        </Button> */}
-      </View>
-    </ScrollView>
+        {/* Action Buttons */}
+        <View style={styles.actionContainer}>
+          <Button 
+            mode="contained" 
+            style={styles.continueButton}
+            labelStyle={styles.continueButtonText}
+            onPress={handleContinue}
+          >
+            Siguiente
+          </Button>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffece0',
+    backgroundColor: '#ffffff',
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
     padding: 20,
     paddingTop: 40,
   },
-  headerContainer: {
-    marginBottom: 30,
-  },
-
-    horizontalLine: {
-    height: 4,
-    backgroundColor: '#eb8c84',
-    width: '95%',
-    alignSelf: 'center',
-    marginVertical: 8,
-    opacity: 0.9,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    backgroundColor: 'transparent',
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 32,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 12,
-  },
-  logoText: {
-    color: '#6b0d29',
-    fontSize: 18,
-    fontWeight: 'bold',
+  loadingText: {
     textAlign: 'center',
-    marginBottom: 5,
+    marginTop: 16,
+    fontSize: 16,
+    color: '#a44230',
+    lineHeight: 22,
   },
-  resultsTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  subtitle: {
+  loadingSubtext: {
+    marginTop: 8,
     fontSize: 14,
     color: '#666666',
     textAlign: 'center',
+  },
+  headerContainer: {
+    alignItems: 'center',
     marginBottom: 30,
-    lineHeight: 20,
-    paddingHorizontal: 10,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 15,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#d5582b',
+    textAlign: 'center',
+  },
+  resultsTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#a44230',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  descriptionContainer: {
+    backgroundColor: '#ffece0',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 30,
+  },
+  description: {
+    fontSize: 16,
+    color: '#a44230',
+    lineHeight: 22,
+    textAlign: 'center',
   },
   resultCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffece0',
     borderRadius: 20,
     marginBottom: 20,
     overflow: 'hidden',
-    elevation: 3,
   },
   cardHeader: {
-    backgroundColor: '#a44230',
-    paddingVertical: 12,
+    backgroundColor: '#d5582b',
+    paddingVertical: 15,
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
   cardTitle: {
     color: '#FFFFFF',
@@ -321,14 +314,14 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     padding: 20,
+    alignItems: 'center',
   },
   resultBadge: {
     backgroundColor: '#a44230',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    marginBottom: 12,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginBottom: 15,
   },
   resultText: {
     color: '#FFFFFF',
@@ -336,20 +329,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   confidenceText: {
-    color: '#666666',
+    color: '#a44230',
     fontSize: 14,
     marginBottom: 16,
+    fontWeight: '600',
   },
   conditionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   conditionBadge: {
     backgroundColor: '#a44230',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 15,
+    borderRadius: 20,
     marginRight: 10,
     marginBottom: 10,
   },
@@ -365,46 +360,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noConditionsText: {
-    color: '#666666',
+    color: '#a44230',
     fontSize: 16,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   analysisImage: {
     width: '100%',
-    height: 180,
+    height: 200,
     borderRadius: 15,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#f1c5b3',
   },
   actionContainer: {
     marginTop: 20,
-    gap: 15,
   },
   continueButton: {
-    backgroundColor: '#a44230',
-    borderRadius: 25,
+    backgroundColor: '#d5582b',
+    borderRadius: 12,
     paddingVertical: 8,
-    elevation: 3,
   },
   continueButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  logoutButtonBottom: {
-    borderColor: '#6b0d29',
-    borderWidth: 1,
-    borderRadius: 25,
-    paddingVertical: 8,
-  },
-  logoutButtonBottomText: {
-    color: '#6b0d29',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  loadingText: {
-    marginTop: 15,
-    fontSize: 16,
-    color: '#6b0d29',
   },
 });
