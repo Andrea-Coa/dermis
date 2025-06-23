@@ -18,6 +18,7 @@ import { useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/_types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Icon } from 'react-native-paper';
 
 type FacialRecognitionFrontalParams = {
   _user_id: string;
@@ -218,7 +219,7 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator animating={true} size="large" />
+        <ActivityIndicator animating={true} size="large" color="#D2691E" />
         <Text style={styles.loadingText}>
           {frontImage ? 'Analizando imagen...' : 'Cargando...'}
         </Text>
@@ -227,250 +228,349 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Encabezado con logo y título */}
-      <View style={styles.headerContainer}>
-        <Image source={require('../../../assets/logo_yes.png')} style={styles.logo} />
-        <View style={styles.titleContainer}>
-          <View style={styles.textPaddingWrapper}>  
-            <Text style={styles.mainTitle} numberOfLines={2}>
-              ¡ ARMEMOS TU RUTINA !
-            </Text>
+    <View style={styles.container}>
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <View style={styles.progressStep}>
+            <View style={[styles.stepCircle, styles.activeStep]}>
+              <Text style={styles.stepNumber}>1</Text>
+            </View>
+            <Text style={styles.stepLabel}>Frontal</Text>
+          </View>
+          <View style={styles.progressLine} />
+          <View style={styles.progressStep}>
+            <View style={styles.stepCircle}>
+              <Text style={styles.stepNumber}>2</Text>
+            </View>
+            <Text style={styles.stepLabel}>Lateral</Text>
+          </View>
+          <View style={styles.progressLine} />
+          <View style={styles.progressStep}>
+            <View style={styles.stepCircle}>
+              <Text style={styles.stepNumber}>3</Text>
+            </View>
+            <Text style={styles.stepLabel}>Rutina</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.horizontalLine} />
-      <Text style={styles.subtitle}>Reconocimiento Facial</Text>
-      
-      <Text style={styles.description}>
-        Para reconocer tu tipo de piel y condiciones requerimos de dos fotos de tu rostro,
-        una completa frontal y una lateral completa
-      </Text>
-      <View style={styles.horizontalLine} />
-
-      {/* Sección de ejemplos con carrusel */}
-      <Text style={styles.subtitle}>Ejemplos Frontales</Text>
-      
-      <View style={styles.exampleSection}>
-        <View style={styles.carouselContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
           <Image 
-            source={exampleImages[currentExampleIndex]} 
-            style={styles.exampleImage}
+            source={require('../../../assets/circle_logo_pinkbg.png')} 
+            style={styles.logo} 
           />
-          <View style={styles.dotsContainer}>
-            {exampleImages.map((_, index) => (
-              <View 
-                key={index}
-                style={[
-                  styles.dot,
-                  index === currentExampleIndex && styles.activeDot
-                ]}
+          <Text style={styles.headerTitle}>Reconocimiento facial</Text>
+        </View>
+
+        {/* Description */}
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>
+            Para reconocer tu tipo de piel y condiciones, requerimos de dos fotos de tu rostro: una completa frontal y una lateral completa. Empecemos con la foto frontal.
+          </Text>
+        </View>
+
+        {/* Photo Section */}
+        <View style={styles.photoSection}>
+          <Text style={styles.sectionTitle}>Foto frontal</Text>
+          <Text style={styles.sectionSubtitle}>
+            Toma una foto de frente, similar a las siguientes imágenes de referencia:
+          </Text>
+
+          {/* Carousel is always visible */}
+          <View style={styles.imageContainer}>
+            <View style={styles.carouselContainer}>
+              <Image 
+                source={exampleImages[currentExampleIndex]} 
+                style={styles.exampleImage}
               />
-            ))}
+              <View style={styles.dotsContainer}>
+                {exampleImages.map((_, index) => (
+                  <View 
+                    key={index}
+                    style={[
+                      styles.dot,
+                      index === currentExampleIndex && styles.activeDot
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
           </View>
-        </View>
 
-        <TouchableOpacity 
-          style={styles.recommendationsButton}
-          onPress={() => setShowRecommendations(true)}
-        >
-          <Text style={styles.recommendationsButtonText}>Ver Recomendaciones</Text>
-        </TouchableOpacity>
-
-        <Button 
-          mode="contained" 
-          onPress={takePhoto}
-          style={styles.uploadButton}
-          labelStyle={styles.uploadButtonText}
-        >
-          Subir foto frontal
-        </Button>
-      </View>
-
-      {/* Botones de acción */}
-      <View style={styles.actionButtons}>
-        <Button 
-          mode="outlined" 
-          icon="camera" 
-          onPress={takePhoto}
-          style={styles.actionButton}
-          labelStyle={styles.actionButtonText}
-        >
-          Tomar foto
-        </Button>
-        <Button 
-          mode="outlined" 
-          icon="image" 
-          onPress={pickImageFromGallery}
-          style={styles.actionButton}
-          labelStyle={styles.actionButtonText}
-        >
-          Galería
-        </Button>
-      </View>
-
-      {/* Modal de recomendaciones */}
-      <Modal
-        visible={showRecommendations}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowRecommendations(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Recomendaciones para tus fotos</Text>
-            <View style={styles.recommendationItem}>
-              <Text style={styles.recommendationText}>• Buena iluminación natural</Text>
-            </View>
-            <View style={styles.recommendationItem}>
-              <Text style={styles.recommendationText}>• Sin maquillaje</Text>
-            </View>
-            <View style={styles.recommendationItem}>
-              <Text style={styles.recommendationText}>• Rostro limpio y seco</Text>
-            </View>
-            <View style={styles.recommendationItem}>
-              <Text style={styles.recommendationText}>• Sin accesorios</Text>
-            </View>
-            <View style={styles.recommendationItem}>
-              <Text style={styles.recommendationText}>• Fondo neutro</Text>
-            </View>
-            
-            <Button 
-              mode="contained" 
-              onPress={() => setShowRecommendations(false)}
-              style={styles.modalButton}
-            >
-              Entendido
-            </Button>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Vista previa de imagen */}
-      {frontImage && (
-        <View style={styles.previewSection}>
-          <Image source={{ uri: frontImage.uri }} style={styles.previewImage} />
-          <Button 
-            mode="contained" 
-            onPress={handleContinue}
-            style={styles.continueButton}
-            labelStyle={styles.continueButtonText}
+          {/* Recommendations */}
+          <TouchableOpacity 
+            style={styles.recommendationsButton}
+            onPress={() => setShowRecommendations(true)}
           >
-            Continuar
-          </Button>
+            <Text style={styles.recommendationsButtonText}>Recomendaciones</Text>
+          </TouchableOpacity>
+
+          {/* User photo preview goes here, below the carousel */}
+          {frontImage && (
+            <View style={styles.userImageContainer}>
+              <Text style={styles.sectionSubtitle}>Tu selección:</Text>
+              <Image source={{ uri: frontImage.uri }} style={styles.previewImage} />
+            </View>
+          )}
+
+          {/* Buttons with icons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.squareButton} onPress={takePhoto}>
+              <Icon source="camera" size={24} color="#FFFFFF" />
+              <Text style={styles.squareButtonText}>Cámara</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.squareButton} onPress={pickImageFromGallery}>
+              <Icon source="image-multiple" size={24} color="#FFFFFF" />
+              <Text style={styles.squareButtonText}>Galería</Text>
+            </TouchableOpacity>
+          </View>
+
+
+          {/* Continue Button */}
+          {frontImage && (
+            <TouchableOpacity style={styles.squareContinueButton} onPress={handleContinue}>
+              <Text style={styles.squareButtonText}>Continuar</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      )}
-    </ScrollView>
+
+        {/* Modal */}
+        <Modal
+          visible={showRecommendations}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowRecommendations(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Recomendaciones para tus fotos</Text>
+              <View style={styles.recommendationsList}>
+                <View style={styles.recommendationItem}>
+                  <Text style={styles.recommendationText}>• Buena iluminación natural</Text>
+                </View>
+                <View style={styles.recommendationItem}>
+                  <Text style={styles.recommendationText}>• Sin maquillaje</Text>
+                </View>
+                <View style={styles.recommendationItem}>
+                  <Text style={styles.recommendationText}>• Rostro limpio y seco</Text>
+                </View>
+                <View style={styles.recommendationItem}>
+                  <Text style={styles.recommendationText}>• Sin accesorios</Text>
+                </View>
+                <View style={styles.recommendationItem}>
+                  <Text style={styles.recommendationText}>• Fondo neutro</Text>
+                </View>
+              </View>
+              <TouchableOpacity 
+                style={styles.modalCloseButton}
+                onPress={() => setShowRecommendations(false)}
+              >
+                <Text style={styles.modalCloseButtonText}>Entendido</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: '#ffece0',
-    padding: 20,
   },
-  headerContainer: {
+  progressContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f9d8c3',
+  },
+  progressBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    justifyContent: 'center',
+  },
+  progressStep: {
+    alignItems: 'center',
+  },
+  stepCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#f1c5b3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  activeStep: {
+    backgroundColor: '#d5582b',
+  },
+  stepNumber: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  stepLabel: {
+    fontSize: 12,
+    color: '#a44230',
+    fontWeight: '500',
+  },
+  progressLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#f1c5b3',
+    marginHorizontal: 10,
+    marginBottom: 25,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 30,
   },
   logo: {
-    width: 120,
-    height: 120,
-    left: 10,
-    zIndex: 2,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 15,
   },
-  titleContainer: {
-    flex: 1,
-    backgroundColor: '#eb8c84',
-    borderRadius: 15,
-    marginLeft: -35,
-    height: 85,
-    overflow: 'hidden',
-  },
-  textPaddingWrapper: {
-    position: 'absolute',
-    right: 65,
-    width: '80%',
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    paddingRight: 10,
-  },
-  mainTitle: {
-    color: '#ffece0',
-    fontSize: 20,
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'right',
-    marginRight: 10,
-    width: '100%',
-    includeFontPadding: false,
-  },
-  horizontalLine: {
-    height: 4,
-    backgroundColor: '#eb8c84',
-    width: '95%',
-    alignSelf: 'center',
-    marginVertical: 8,
-    opacity: 0.9,
-  },
-  subtitle: {
     color: '#d5582b',
-    fontSize: 20,
-    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
+  },
+  descriptionContainer: {
+    backgroundColor: '#fcd4c2',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 30,
   },
   description: {
-    color: '#6b0d29',
     fontSize: 16,
-    fontWeight: 'bold',
-    
-    lineHeight: 18,
-    marginBottom: 8,
-    textAlign: 'center',
-    width: '95%',
+    color: '#a44230',
+    lineHeight: 22,
   },
-  exampleSection: {
+  photoSection: {
+    backgroundColor: '#fcd4c2',
+    borderRadius: 20,
+    padding: 25,
     alignItems: 'center',
-    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#a44230',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#a44230',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  imageContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  imagePlaceholder: {
+    display: 'none',
   },
   carouselContainer: {
     alignItems: 'center',
-    marginBottom: 15,
+    backgroundColor: 'transparent',
   },
-  exampleImage: {
+  userImageContainer: {
+    marginTop: 15,
+    marginBottom: 20, // ✅ Add this line
+    alignItems: 'center',
+  },
+  previewImage: {
     width: 200,
     height: 200,
+    borderRadius: 15,
+    borderWidth: 3,
+    borderColor: '#d5582b',
+    marginTop: 8,
+  },
+  squareButton: {
+    backgroundColor: '#d5582b',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '45%',
+    gap: 8,
+  },
+  squareButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  squareContinueButton: {
+    backgroundColor: '#a44230',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  exampleImage: {
+    width: 150,
+    height: 150,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#a44230',
+    marginBottom: 15,
   },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 10,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ccc',
+    backgroundColor: '#f1c5b3',
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: '#a44230',
+    backgroundColor: '#d5582b',
   },
   recommendationsButton: {
-    marginVertical: 15,
+    marginBottom: 20,
   },
   recommendationsButtonText: {
     color: '#d5582b',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
     textDecorationLine: 'underline',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
+  },
+  loadingText: {
+    color: '#a44230',
+    fontSize: 16,
+    marginTop: 15,
+    textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
@@ -479,91 +579,54 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#ffece0',
-    borderRadius: 10,
-    padding: 20,
+    width: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 25,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 22,
-    width: '90%',
-    
-    textAlign: 'center',
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#6b0d29',
+    marginBottom: 20,
+    color: '#a44230',
+    textAlign: 'center',
+  },
+  recommendationsList: {
+    width: '100%',
+    marginBottom: 25,
   },
   recommendationItem: {
-    alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 12,
+    paddingLeft: 10,
   },
   recommendationText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#d5582b',
-    textAlign: 'center',
-    width: '80%',
+    fontSize: 16,
+    color: '#666666',
+    lineHeight: 22,
   },
-  modalButton: {
-    marginTop: 20,
-    backgroundColor: '#eb8c84',
-    width: '80%',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  actionButton: {
-    borderColor: '#a44230',
-    borderWidth: 2,
+  modalCloseButton: {
+    backgroundColor: '#d5582b',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
     borderRadius: 25,
-    width: '45%',
-  },
-  actionButtonText: {
-    color: '#a44230',
-    fontWeight: 'bold',
-  },
-  uploadButton: {
-    backgroundColor: '#eb8c84',
-    borderRadius: 15,
-    paddingVertical: 5,
-    width: '75%',
-  },
-  uploadButtonText: {
-    color: '#ffece0',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  previewSection: {
+    width: '80%',
     alignItems: 'center',
-    marginTop: 20,
   },
-  previewImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: '#a44230',
-  },
-  continueButton: {
-    backgroundColor: '#a44230',
-    borderRadius: 25,
-    paddingVertical: 5,
-    width: '80%',
-  },
-  continueButtonText: {
-    color: 'white',
+  modalCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 16,
-  },
-  loadingText: {
-    color: '#6b0d29',
-    fontSize: 16,
-    marginTop: 10,
   },
 });
+
 
 export default FR_efficient_net;

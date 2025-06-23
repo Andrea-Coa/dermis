@@ -94,49 +94,53 @@ const Login = () => {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Logo */}
       <Image
-        source={require('../../../assets/logo_yes.png')}
+        source={require('../../../assets/circle_logo_pinkbg.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
+      <Text style={styles.title}>Bienvenid@ de vuelta</Text>
+
       <Text style={styles.description}>
-        ¡ Qué bueno verte de nuevo !            
-        Inicia sesión para continuar con el cuidado tu piel
+        Inicia sesión para continuar con el cuidado de tu piel.
       </Text>
 
       <View style={styles.form}>
-        <TextInput
-          placeholder="Correo"
-          placeholderTextColor="#6b0d29"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-          value={formData.correo}
-          onChangeText={(text) => handleChange('correo', text)}
-        />
-        <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor="#6b0d29"
-          secureTextEntry
-          style={styles.input}
-          value={formData.contrasena}
-          onChangeText={(text) => handleChange('contrasena', text)}
-        />
-      <View style={styles.loginSection}>
-          <TouchableOpacity onPress={handleSubmit}>
-            <Text style={styles.loginLink}>Iniciar sesión</Text>
-          </TouchableOpacity>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Correo electrónico"
+            placeholderTextColor="#a44230"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+            value={formData.correo}
+            onChangeText={(text) => handleChange('correo', text)}
+          />
         </View>
 
-        {/* Register Option */}
-     <View>
-    <TouchableOpacity onPress={goToRegister}>
-      <View style={styles.registerTextContainer}>
-        <Text style={styles.registerPrompt}>¿No tienes cuenta?</Text>
-        <Text style={styles.registerLink}>Regístrate</Text>
-      </View>
-    </TouchableOpacity>
-  </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor="#a44230"
+            secureTextEntry
+            style={styles.input}
+            value={formData.contrasena}
+            onChangeText={(text) => handleChange('contrasena', text)}
+          />
+        </View>
+
+        {/* Primary Action Button */}
+        <TouchableOpacity onPress={handleSubmit} style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+        </TouchableOpacity>
+
+        {/* Secondary Action */}
+        <View style={styles.registerSection}>
+          <Text style={styles.registerPrompt}>¿No tienes cuenta?</Text>
+          <TouchableOpacity onPress={goToRegister} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Regístrate</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -144,88 +148,105 @@ const Login = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Cambiado de flexGrow a flex
-    backgroundColor: '#ffdac5',
+    flexGrow: 1,
+    backgroundColor: '#ffece0',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,// Añadido para posicionamiento absoluto de hijos
+    padding: 24,
+    minHeight: '100%',
   },
   logo: {
-    width: 260,
-    height: 260,
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  title: {
+    color: '#d5582b',
+    fontSize: 28,
+    textAlign: 'center',
     marginBottom: 12,
+    fontWeight: 'bold',
   },
   description: {
-    color: '#d5582b',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#a44230',
+    fontSize: 16,
     textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 24,
-    width: '95%',
+    marginBottom: 40,
+    lineHeight: 22,
+    width: '90%',
   },
   form: {
     width: '100%',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 60, // Espacio para el botón de registro
+  },
+  inputContainer: {
+    width: '90%',
+    maxWidth: 320,
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: '#fbcec4',
-    borderColor: '#d5582b',
-    borderWidth: 4,
-    borderRadius: 15,
-    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderColor: '#e0e0e0',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    fontSize: 18,
-    fontWeight: 'bold',
-    width: '85%',
-    maxWidth: 265,
-    color: '#6b0d29',
-    marginBottom: 8,
-  },
-  loginButton: {
-    backgroundColor: '#a44230',
-    borderRadius: 30,
-    paddingVertical: 8,
-    elevation: 3,
-    width: '85%',
-    maxWidth: 280,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    width: '100%',
+    color: '#333333',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  // ESTILOS CORREGIDOS PARA EL REGISTRO (parte inferior derecha)
-  
-  registerTextContainer: {
-    flexDirection: 'row',
+  primaryButton: {
+    backgroundColor: '#d5582b',
+    borderRadius: 30,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    width: '90%',
+    maxWidth: 320,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: '#d5582b',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  registerSection: {
     alignItems: 'center',
+    marginTop: 16,
   },
   registerPrompt: {
-    color: '#6b0d29',
-    fontSize: 16, // Aumentado ligeramente
-    marginRight: 4,
+    color: '#666666',
+    fontSize: 16,
   },
-  registerLink: {
+  secondaryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  secondaryButtonText: {
     color: '#a44230',
-    fontSize: 16, // Aumentado ligeramente
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
-  // (Mantén los otros estilos que no han cambiado)
-  loginSection: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  loginLink: {
-    color: '#d5582b',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '500',
     textDecorationLine: 'underline',
   },
 });
+
 export default Login;

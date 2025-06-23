@@ -28,9 +28,58 @@ const Register = () => {
     correo: '',
     contrasena: '',
   });
+  
+  const [errors, setErrors] = useState({
+    nombre: '',
+    nickname: '',
+    edad: '',
+    correo: '',
+    contrasena: '',
+  });
+
+  const validateField = (name: keyof typeof formData, value: string) => {
+    let error = '';
+    
+    switch (name) {
+      case 'nombre':
+        if (value.length > 0 && value.length < 2) {
+          error = 'El nombre debe tener al menos 2 caracteres';
+        }
+        break;
+      case 'nickname':
+        if (value.length > 0 && value.length < 2) {
+          error = 'El apodo debe tener al menos 2 caracteres';
+        }
+        break;
+      case 'edad':
+        if (value.length > 0) {
+          const age = parseInt(value, 10);
+          if (isNaN(age) || age < 14 || age > 120) {
+            error = 'La edad debe estar entre 14 y 120 años';
+          }
+        }
+        break;
+      case 'correo':
+        if (value.length > 0) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            error = 'Ingresa un correo electrónico válido';
+          }
+        }
+        break;
+      case 'contrasena':
+        if (value.length > 0 && value.length < 6) {
+          error = 'La contraseña debe tener al menos 6 caracteres';
+        }
+        break;
+    }
+    
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
 
   const handleChange = (name: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+    validateField(name, value);
   };
 
   const handleSubmit = async () => {
@@ -92,179 +141,204 @@ const Register = () => {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Logo */}
       <Image
-        source={require('../../../assets/logo_yes.png')}
+        source={require('../../../assets/circle_logo_pinkbg.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
+      <Text style={styles.title}>Únete a Dermis</Text>
+
       <Text style={styles.description}>
-        Para pertenecer a la comunidad Dermis, por favor regístrate y prepárate para cuidar tu piel
+        Regístrate y empieza a cuidar tu piel con nuestra comunidad.
       </Text>
 
       <View style={styles.form}>
-        <TextInput
-          placeholder="Nombre"
-          placeholderTextColor="#6b0d29"
-          style={styles.input}
-          value={formData.nombre}
-          onChangeText={(text) => handleChange('nombre', text)}
-        />
-        <TextInput
-          placeholder="Apodo favorito"
-          placeholderTextColor="#6b0d29"
-          style={styles.input}
-          value={formData.nickname}
-          onChangeText={(text) => handleChange('nickname', text)}
-        />
-        <TextInput
-          placeholder="Edad"
-          placeholderTextColor="#6b0d29"
-          keyboardType="numeric"
-          style={styles.input}
-          value={formData.edad}
-          onChangeText={(text) => handleChange('edad', text)}
-        />
-        <TextInput
-          placeholder="Correo"
-          placeholderTextColor="#6b0d29"
-          keyboardType="email-address"
-          style={styles.input}
-          value={formData.correo}
-          onChangeText={(text) => handleChange('correo', text)}
-        />
-        <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor="#6b0d29"
-          secureTextEntry
-          style={styles.input}
-          value={formData.contrasena}
-          onChangeText={(text) => handleChange('contrasena', text)}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Nombre completo"
+            placeholderTextColor="#a44230"
+            style={[styles.input, errors.nombre ? styles.inputError : null]}
+            value={formData.nombre}
+            onChangeText={(text) => handleChange('nombre', text)}
+          />
+          {errors.nombre ? <Text style={styles.errorText}>{errors.nombre}</Text> : null}
+        </View>
 
- {/*
-      <Button 
-          mode="contained" 
-          style={styles.registerButton}
-          labelStyle={styles.registerButtonText}
-          onPress={handleSubmit}
-        >
-          Registrarme
-      </Button>
-*/}
-        {/* Login Option */}
-        <View style={styles.buttonContainer}>
-  <TouchableOpacity onPress={goToLogin} style={styles.loginButton}>
-    <Text style={styles.loginButtonText}>Iniciar sesión</Text>
-  </TouchableOpacity>
-  
-  <TouchableOpacity onPress={handleSubmit} style={styles.loginButton}>
-    <Text style={styles.loginButtonText}>Registrarme</Text>
-  </TouchableOpacity>
-</View>
-        {/*
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Apodo favorito"
+            placeholderTextColor="#a44230"
+            style={[styles.input, errors.nickname ? styles.inputError : null]}
+            value={formData.nickname}
+            onChangeText={(text) => handleChange('nickname', text)}
+          />
+          {errors.nickname ? <Text style={styles.errorText}>{errors.nickname}</Text> : null}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Edad"
+            placeholderTextColor="#a44230"
+            keyboardType="numeric"
+            style={[styles.input, errors.edad ? styles.inputError : null]}
+            value={formData.edad}
+            onChangeText={(text) => handleChange('edad', text)}
+          />
+          {errors.edad ? <Text style={styles.errorText}>{errors.edad}</Text> : null}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Correo electrónico"
+            placeholderTextColor="#a44230"
+            keyboardType="email-address"
+            style={[styles.input, errors.correo ? styles.inputError : null]}
+            value={formData.correo}
+            onChangeText={(text) => handleChange('correo', text)}
+          />
+          {errors.correo ? <Text style={styles.errorText}>{errors.correo}</Text> : null}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor="#a44230"
+            secureTextEntry
+            style={[styles.input, errors.contrasena ? styles.inputError : null]}
+            value={formData.contrasena}
+            onChangeText={(text) => handleChange('contrasena', text)}
+          />
+          {errors.contrasena ? <Text style={styles.errorText}>{errors.contrasena}</Text> : null}
+        </View>
+
+        {/* Primary Action Button */}
+        <TouchableOpacity onPress={handleSubmit} style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>Crear cuenta</Text>
+        </TouchableOpacity>
+
+        {/* Secondary Action */}
         <View style={styles.loginSection}>
-          <Text style={styles.loginPrompt}>¿Ya tienes cuenta?</Text>
-          <TouchableOpacity onPress={goToLogin}>
-            <Text style={styles.loginLink}>Inicia sesión aquí</Text>
+          <Text style={styles.loginPrompt}>¿Ya tienes una cuenta?</Text>
+          <TouchableOpacity onPress={goToLogin} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Iniciar sesión</Text>
           </TouchableOpacity>
         </View>
-        */}
       </View>
     </ScrollView>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#ffdac5',
+    backgroundColor: '#ffece0',
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 24,
+    paddingTop: 40,
   },
   logo: {
-    width: 260, 
-    height: 260, 
-    marginBottom: 10,
-    alignSelf: 'center', // Para asegurar que esté centrado
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+    marginTop: 20,
+    alignSelf: 'center',
   },
-    form: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10,
+  title: {
+    color: '#d5582b',
+    fontSize: 28,
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: 'bold',
   },
   description: {
-    color: '#d5582b',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-    width: '98%',
-  },
-  input: {
-    backgroundColor: '#fbcec4',
-    borderColor: '#d5582b', 
-    borderWidth: 4,
-    borderRadius: 15,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    fontSize: 18,
-    
-    fontWeight: 'bold',
-    width: '85%',
-    maxWidth: 265,
-    color: '#6b0d29',
-    marginBottom: 8,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '85%',
-    maxWidth: 280,
-    marginTop: 20,
-  },
-  loginButton: {
-    padding: 10,
-  },
-  loginButtonText: {
-    color: '#d5582b',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
-  /*
-  registerButton: {
-    backgroundColor: '#a44230',
-    borderRadius: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    elevation: 3,
-  },
-  registerButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  */
-  loginSection: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  loginPrompt: {
-    color: '#6b0d29',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  loginLink: {
     color: '#a44230',
     fontSize: 16,
-    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+    width: '90%',
+  },
+  form: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    width: '90%',
+    maxWidth: 320,
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e0e0e0',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    width: '100%',
+    color: '#333333',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  inputError: {
+    borderColor: '#ff4444',
+    borderWidth: 2,
+  },
+  errorText: {
+    color: '#ff4444',
+    fontSize: 14,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  primaryButton: {
+    backgroundColor: '#d5582b',
+    borderRadius: 30,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    width: '90%',
+    maxWidth: 320,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: '#d5582b',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  loginSection: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  loginPrompt: {
+    color: '#666666',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  secondaryButtonText: {
+    color: '#a44230',
+    fontSize: 16,
+    fontWeight: '500',
     textDecorationLine: 'underline',
   },
 });
-
-
 
 export default Register;
