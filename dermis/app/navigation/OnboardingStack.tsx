@@ -4,6 +4,7 @@ import FR_cnn from '../screens/main/FR_cnn';
 import SkinSensitive from '../screens/main/SkinSensitive';
 import AnalysisResults from '../screens/main/AnalysisResults';
 import { RootStackParamList } from './_types';
+import Intro from '../screens/main/Intro';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -12,7 +13,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function OnboardingStack() {
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={{headerShown: true}}>
+          <Stack.Screen 
+            name="Intro" 
+            component={Intro}
+            options={{ title: 'Creando tu rutina', headerShown: false }}
+          />
           <Stack.Screen 
             name="FR_efficient_net" 
             component={FR_efficient_net}
@@ -31,7 +37,7 @@ export default function OnboardingStack() {
           <Stack.Screen 
             name="AnalysisResults"  
             component={AnalysisResults}
-            options={{ title: 'Resultados del análisis' }}
+            options={{ title: 'Resultados del análisis', headerShown:false }}
           />
         </Stack.Navigator>
       );

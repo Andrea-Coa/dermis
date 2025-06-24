@@ -5,15 +5,6 @@ export type SafeImagePickerAsset = {
     base64?: string;
   };
 
-// export type Product = {
-//     product_id: string;
-//     name: string;
-//     brand: string;
-//     limpiar: boolean;
-//     tratar: boolean;
-//     proteger: boolean;
-//     image_base64: string | null;
-// };
 
 export type Product = {
   product_id: string;
@@ -80,11 +71,12 @@ export type RecommendedProduct = {
       };
     };
   
-    FR_efficient_net: { _user_id: string };
+    // FR_efficient_net: { _user_id: string };
+    FR_efficient_net: undefined;
   
     FR_cnn: {
       frontImage: SafeImagePickerAsset;
       skin_conditions: string[];
-      _user_id: string;
+      // _user_id: string;
     };
   };

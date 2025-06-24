@@ -212,7 +212,7 @@ const FR_efficient_net: React.FC<FR_efficient_netProps> = ({ route }) => {
     navigation.navigate('FR_cnn', {
       frontImage: safeImage,
       skin_conditions: conditions,
-      _user_id: storedUserId ?? route.params._user_id,
+      // _user_id: storedUserId ?? route.params._user_id,
     });
   };
 
