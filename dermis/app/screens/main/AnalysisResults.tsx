@@ -53,7 +53,7 @@ export default function AnalysisResults() {
         throw new Error("User ID not found in storage");
       }
   
-      const preprocessingResponse = await fetch('http://192.168.1.48:5001/preprocesar', {
+      const preprocessingResponse = await fetch('http://192.168.37.225:5001/preprocesar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,12 +101,12 @@ export default function AnalysisResults() {
       console.log("✅ Routine created:", lambdaData);
   
       // await AsyncStorage.setItem("routine_id", lambdaData.routine_id);
-      await setHasCompletedOnboarding(true);
-  
+      
     } catch (error) {
-      console.error('❌ Error during routine creation:', error);
+      console.log('❌ Error during routine creation:', error); // better: console error!!
       Alert.alert('Error', 'Ocurrió un error al crear la rutina');
     } finally {
+      await setHasCompletedOnboarding(true);
       setLoading(false);
     }
   };

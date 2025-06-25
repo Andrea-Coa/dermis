@@ -83,7 +83,7 @@ const FR_cnn: React.FC = () => {
         name: 'foto.jpg',
       } as any);
 
-      const response = await fetch('http://192.168.1.48:5000/api/analyze-skin/cnn', {
+      const response = await fetch('http://192.168.37.225:5000/api/analyze-skin/cnn', {
         method: 'POST',
         body: formData,
       });

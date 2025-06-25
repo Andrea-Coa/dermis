@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { Text, Surface, Button, TextInput, IconButton } from 'react-native-paper';
 import { Product } from '../navigation/_types';
 
 type Props = {
   product: Product;
+  userId?: string;
+};
+
+type ExistingReview = {
+  review_id: number;
+  stars: number;
+  review: string | null;
+  created_at: string;
 };
 
 // Same pastel colors as ProductCard for consistency
@@ -19,12 +27,59 @@ const pastelColors = [
   '#FFE5F5', // Pastel Rose
 ];
 
-export default function ProductDetailContent({ product }: Props) {
+export default function ProductDetailContent({ product, userId }: Props) {
   const [showAllIngredients, setShowAllIngredients] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
+  const [existingReview, setExistingReview] = useState<ExistingReview | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Generate consistent color based on product name
   const colorIndex = product.name.length % pastelColors.length;
   const backgroundColor = pastelColors[colorIndex];
+
+  // Load existing review on component mount
+  useEffect(() => {
+    if (userId && product.product_id) {
+      loadExistingReview();
+    }
+  }, [userId, product.product_id]);
+
+  // Load existing review function
+  const loadExistingReview = async () => {
+    if (!userId) return;
+
+    setIsLoadingReview(true);
+    try {
+      const response = await fetch(
+        `https://hny1katz64.execute-api.us-east-1.amazonaws.com/default/product_reviews?user_id=${userId}&product_id=${product.product_id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const reviewData = await response.json();
+        setExistingReview(reviewData);
+        setSelectedRating(reviewData.stars);
+        setReviewText(reviewData.review || '');
+      } else if (response.status === 404) {
+        // No existing review found
+        setExistingReview(null);
+        setShowReviewForm(true);
+      }
+    } catch (error) {
+      console.error('Error loading existing review:', error);
+    } finally {
+      setIsLoadingReview(false);
+    }
+  };
 
   // Format price
   const formatPrice = (price: number): string => {
@@ -48,6 +103,28 @@ export default function ProductDetailContent({ product }: Props) {
     }
     
     return stars.join(' ');
+  };
+
+  // Render interactive rating stars for review form
+  const renderRatingStars = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <TouchableOpacity
+          key={i}
+          onPress={() => setSelectedRating(i)}
+          style={styles.starButton}
+        >
+          <Text style={[
+            styles.starText,
+            { color: i <= selectedRating ? '#FFD700' : '#E0E0E0' }
+          ]}>
+            ★
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+    return stars;
   };
 
   // Helper function to capitalize first letter of each word (title case)
@@ -86,7 +163,84 @@ export default function ProductDetailContent({ product }: Props) {
     return ingredientsText.length > 100;
   };
 
-  console.log(product.description);
+  // Submit or update review function
+  const submitReview = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'Debes iniciar sesión para dejar una reseña');
+      return;
+    }
+
+    if (selectedRating === 0) {
+      Alert.alert('Error', 'Por favor selecciona una calificación');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const method = existingReview ? 'PATCH' : 'POST';
+      const response = await fetch('https://hny1katz64.execute-api.us-east-1.amazonaws.com/default/product_reviews', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: product.product_id,
+          stars: selectedRating,
+          review: reviewText.trim() || null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const successMessage = existingReview ? 'Tu reseña ha sido actualizada correctamente' : 'Tu reseña ha sido enviada correctamente';
+        Alert.alert('¡Éxito!', successMessage, [
+          {
+            text: 'OK',
+            onPress: () => {
+              setIsEditing(false);
+              setShowReviewForm(false);
+              loadExistingReview();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'No se pudo procesar la reseña');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error de conexión. Intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle edit button press
+  const handleEditReview = () => {
+    setIsEditing(true);
+    setShowReviewForm(true);
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setShowReviewForm(false);
+    if (existingReview) {
+      setSelectedRating(existingReview.stars);
+      setReviewText(existingReview.review || '');
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -124,7 +278,7 @@ export default function ProductDetailContent({ product }: Props) {
       </Surface>
 
       {/* Description Section - Only show if description exists and is not empty */}
-      {product.description && product.description.trim() !== '' && (
+      {product.description && product.description.trim() !== 'NaN' && product.description != '' && (
         <Surface style={styles.descriptionCard} elevation={2}>
           <Text style={styles.sectionTitle}>Descripción</Text>
           <Text style={styles.descriptionText}>{capitalizeSentences(product.description)}</Text>
@@ -137,8 +291,8 @@ export default function ProductDetailContent({ product }: Props) {
         <Text style={styles.ingredientsText}>{formatIngredients()}</Text>
         {shouldShowToggle() && (
           <TouchableOpacity 
-            style={styles.toggleButton}
-            onPress={() => setShowAllIngredients(!showAllIngredients)}
+          style={styles.toggleButton}
+          onPress={() => setShowAllIngredients(!showAllIngredients)}
           >
             <Text style={styles.toggleButtonText}>
               {showAllIngredients ? 'Ver menos' : 'Ver más'}
@@ -146,6 +300,105 @@ export default function ProductDetailContent({ product }: Props) {
           </TouchableOpacity>
         )}
       </Surface>
+      
+      {/* Review Section */}
+      {userId && !isLoadingReview && (
+        <>
+          {existingReview && !showReviewForm ? (
+            // Display existing review
+            <Surface style={styles.existingReviewCard} elevation={2}>
+              <View style={styles.reviewHeader}>
+                <Text style={styles.sectionTitle}>Tu reseña</Text>
+                <IconButton
+                  icon="pencil"
+                  size={20}
+                  iconColor="#a44230"
+                  onPress={handleEditReview}
+                />
+              </View>
+              <View style={styles.reviewContent}>
+                <Text style={styles.existingStars}>{renderStars(existingReview.stars)}</Text>
+                {existingReview.review && (
+                  <Text style={styles.existingReviewText}>{existingReview.review}</Text>
+                )}
+                <Text style={styles.reviewDate}>
+                  Publicada el {formatDate(existingReview.created_at)}
+                </Text>
+              </View>
+            </Surface>
+          ) : (
+            // Show review form (for new review or editing)
+            showReviewForm && (
+              <Surface style={styles.reviewFormCard} elevation={2}>
+                <Text style={styles.sectionTitle}>
+                  {isEditing ? 'Editar reseña' : 'Escribir reseña'}
+                </Text>
+                
+                {/* Rating Stars */}
+                <View style={styles.ratingSection}>
+                  <Text style={styles.ratingLabel}>Calificación:</Text>
+                  <View style={styles.starsContainer}>
+                    {renderRatingStars()}
+                  </View>
+                </View>
+
+                {/* Review Text Input */}
+                <TextInput
+                  mode="outlined"
+                  label="Escribe tu reseña (opcional)"
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  multiline
+                  numberOfLines={4}
+                  style={styles.reviewInput}
+                  outlineColor="rgba(164, 66, 48, 0.3)"
+                  activeOutlineColor="#a44230"
+                />
+
+                {/* Action Buttons */}
+                <View style={styles.buttonContainer}>
+                  {isEditing && (
+                    <Button
+                      mode="outlined"
+                      onPress={handleCancelEdit}
+                      style={styles.cancelButton}
+                      labelStyle={styles.cancelButtonLabel}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
+                  <Button
+                    mode="contained"
+                    onPress={submitReview}
+                    loading={isSubmitting}
+                    disabled={isSubmitting || selectedRating === 0}
+                    style={[styles.submitButton, isEditing && styles.submitButtonWithCancel]}
+                    labelStyle={styles.submitButtonLabel}
+                  >
+                    {isSubmitting ? 'Enviando...' : (isEditing ? 'Actualizar' : 'Enviar reseña')}
+                  </Button>
+                </View>
+              </Surface>
+            )
+          )}
+        </>
+      )}
+
+      {/* Loading indicator */}
+      {isLoadingReview && userId && (
+        <Surface style={styles.loadingCard} elevation={2}>
+          <Text style={styles.loadingText}>Cargando reseña...</Text>
+        </Surface>
+      )}
+
+      {/* Login prompt */}
+      {!userId && (
+        <Surface style={styles.loginPromptCard} elevation={2}>
+          <Text style={styles.loginPromptText}>
+            Inicia sesión para escribir una reseña
+          </Text>
+        </Surface>
+      )}
     </View>
   );
 }
@@ -227,6 +480,110 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     fontWeight: '500',
+  },
+  existingReviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  reviewContent: {
+    gap: 12,
+  },
+  existingStars: {
+    fontSize: 20,
+    color: '#FFD700',
+  },
+  existingReviewText: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#999999',
+    fontStyle: 'italic',
+  },
+  reviewFormCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+  },
+  ratingSection: {
+    marginBottom: 20,
+  },
+  ratingLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 12,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starButton: {
+    paddingHorizontal: 4,
+  },
+  starText: {
+    fontSize: 32,
+  },
+  reviewInput: {
+    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    borderColor: '#a44230',
+    borderRadius: 12,
+  },
+  cancelButtonLabel: {
+    color: '#a44230',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#a44230',
+    borderRadius: 12,
+  },
+  submitButtonWithCancel: {
+    flex: 1,
+  },
+  submitButtonLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loadingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666666',
+  },
+  loginPromptCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+  loginPromptText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
   },
   descriptionCard: {
     backgroundColor: '#FFFFFF',

@@ -37,7 +37,7 @@ export default function OnboardingStack() {
           <Stack.Screen 
             name="AnalysisResults"  
             component={AnalysisResults}
-            options={{ title: 'Resultados del análisis', headerShown:false }}
+            options={{ title: 'Resultados del análisis', headerShown:true }}
           />
         </Stack.Navigator>
       );
