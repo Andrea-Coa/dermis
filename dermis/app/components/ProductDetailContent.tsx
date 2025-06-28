@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Alert, ScrollView, Modal } from 'react-native';
 import { Text, Surface, Button, TextInput, IconButton } from 'react-native-paper';
 import { Product } from '../navigation/_types';
 
@@ -29,7 +29,7 @@ const pastelColors = [
 
 export default function ProductDetailContent({ product, userId }: Props) {
   const [showAllIngredients, setShowAllIngredients] = useState(false);
-  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,13 +72,34 @@ export default function ProductDetailContent({ product, userId }: Props) {
       } else if (response.status === 404) {
         // No existing review found
         setExistingReview(null);
-        setShowReviewForm(true);
       }
     } catch (error) {
       console.error('Error loading existing review:', error);
     } finally {
       setIsLoadingReview(false);
     }
+  };
+
+  // Function to handle calificar button press
+  const handleCalificarPress = () => {
+    if (!userId) {
+      Alert.alert('Error', 'Debes iniciar sesión para calificar este producto');
+      return;
+    }
+
+    // Reset form if creating new review
+    if (!existingReview) {
+      setSelectedRating(0);
+      setReviewText('');
+      setIsEditing(false);
+    } else {
+      // Load existing review data for editing
+      setSelectedRating(existingReview.stars);
+      setReviewText(existingReview.review || '');
+      setIsEditing(true);
+    }
+
+    setShowReviewModal(true);
   };
 
   // Format price
@@ -146,7 +167,7 @@ export default function ProductDetailContent({ product, userId }: Props) {
     }
 
     const ingredientsText = product.ingredients.join(', ');
-    const maxLength = 100; // Adjust this value as needed
+    const maxLength = 100;
 
     if (ingredientsText.length <= maxLength || showAllIngredients) {
       return ingredientsText;
@@ -200,8 +221,8 @@ export default function ProductDetailContent({ product, userId }: Props) {
           {
             text: 'OK',
             onPress: () => {
+              setShowReviewModal(false);
               setIsEditing(false);
-              setShowReviewForm(false);
               loadExistingReview();
             },
           },
@@ -216,20 +237,17 @@ export default function ProductDetailContent({ product, userId }: Props) {
     }
   };
 
-  // Handle edit button press
-  const handleEditReview = () => {
-    setIsEditing(true);
-    setShowReviewForm(true);
-  };
-
-  // Handle cancel edit
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setShowReviewForm(false);
+  // Handle cancel modal
+  const handleCancelModal = () => {
+    setShowReviewModal(false);
     if (existingReview) {
       setSelectedRating(existingReview.stars);
       setReviewText(existingReview.review || '');
+    } else {
+      setSelectedRating(0);
+      setReviewText('');
     }
+    setIsEditing(false);
   };
 
   // Format date
@@ -244,161 +262,166 @@ export default function ProductDetailContent({ product, userId }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* Header Section with Image */}
-      <Surface style={[styles.headerCard, { backgroundColor }]} elevation={3}>
-        <View style={styles.imageContainer}>
-          {product.image_base64 ? (
-            <Image 
-              source={{ uri: `data:image/jpeg;base64,${product.image_base64}` }} 
-              style={styles.productImage} 
-              resizeMode="cover" 
-            />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderText}>Sin imagen</Text>
-            </View>
-          )}
-        </View>
-        
-        <View style={styles.titleSection}>
-          <Text style={styles.productTitle}>{toTitleCase(product.name)}</Text>
-          <Text style={styles.productBrand}>{toTitleCase(product.brand)}</Text>
-          <Text style={styles.productPrice}>{formatPrice(product.price)}</Text>
-        </View>
-      </Surface>
-
-      {/* Rating Section */}
-      <Surface style={styles.ratingCard} elevation={2}>
-        <View style={styles.ratingContainer}>
-          <Text style={styles.starsText}>{renderStars(product.stars)}</Text>
-          <Text style={styles.ratingText}>
-            {product.stars.toFixed(1)} ({product.num_reviews} reseñas)
-          </Text>
-        </View>
-      </Surface>
-
-      {/* Description Section - Only show if description exists and is not empty */}
-      {product.description && product.description.trim() !== 'NaN' && product.description != '' && (
-        <Surface style={styles.descriptionCard} elevation={2}>
-          <Text style={styles.sectionTitle}>Descripción</Text>
-          <Text style={styles.descriptionText}>{capitalizeSentences(product.description)}</Text>
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Header Section with Image */}
+        <Surface style={[styles.headerCard, { backgroundColor }]} elevation={3}>
+          <View style={styles.imageContainer}>
+            {product.image_base64 ? (
+              <Image 
+                source={{ uri: `data:image/jpeg;base64,${product.image_base64}` }} 
+                style={styles.productImage} 
+                resizeMode="cover" 
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>Sin imagen</Text>
+              </View>
+            )}
+          </View>
+          
+          <View style={styles.titleSection}>
+            <Text style={styles.productTitle}>{toTitleCase(product.name)}</Text>
+            <Text style={styles.productBrand}>{toTitleCase(product.brand)}</Text>
+            <Text style={styles.productPrice}>{formatPrice(product.price)}</Text>
+          </View>
         </Surface>
-      )}
 
-      {/* Ingredients Section */}
-      <Surface style={styles.ingredientsCard} elevation={2}>
-        <Text style={styles.sectionTitle}>Ingredientes</Text>
-        <Text style={styles.ingredientsText}>{formatIngredients()}</Text>
-        {shouldShowToggle() && (
-          <TouchableOpacity 
-          style={styles.toggleButton}
-          onPress={() => setShowAllIngredients(!showAllIngredients)}
-          >
-            <Text style={styles.toggleButtonText}>
-              {showAllIngredients ? 'Ver menos' : 'Ver más'}
+        {/* Rating Section with Calificar Button */}
+        <Surface style={styles.ratingCard} elevation={2}>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.starsText}>{renderStars(product.stars)}</Text>
+            <Text style={styles.ratingText}>
+              {product.stars.toFixed(1)} ({product.num_reviews} reseñas)
             </Text>
-          </TouchableOpacity>
+            
+            {/* Calificar Button */}
+            <Button
+              mode="contained"
+              onPress={handleCalificarPress}
+              style={styles.calificarButton}
+              labelStyle={styles.calificarButtonLabel}
+              icon="star"
+            >
+              {existingReview ? 'Editar reseña' : 'Calificar'}
+            </Button>
+          </View>
+        </Surface>
+
+        {/* Description Section - Only show if description exists and is not empty */}
+        {product.description && product.description.trim() !== 'NaN' && product.description != '' && (
+          <Surface style={styles.descriptionCard} elevation={2}>
+            <Text style={styles.sectionTitle}>Descripción</Text>
+            <Text style={styles.descriptionText}>{capitalizeSentences(product.description)}</Text>
+          </Surface>
         )}
-      </Surface>
-      
-      {/* Review Section */}
-      {userId && !isLoadingReview && (
-        <>
-          {existingReview && !showReviewForm ? (
-            // Display existing review
-            <Surface style={styles.existingReviewCard} elevation={2}>
-              <View style={styles.reviewHeader}>
-                <Text style={styles.sectionTitle}>Tu reseña</Text>
-                <IconButton
-                  icon="pencil"
-                  size={20}
-                  iconColor="#a44230"
-                  onPress={handleEditReview}
-                />
-              </View>
-              <View style={styles.reviewContent}>
-                <Text style={styles.existingStars}>{renderStars(existingReview.stars)}</Text>
-                {existingReview.review && (
-                  <Text style={styles.existingReviewText}>{existingReview.review}</Text>
-                )}
-                <Text style={styles.reviewDate}>
-                  Publicada el {formatDate(existingReview.created_at)}
-                </Text>
-              </View>
-            </Surface>
-          ) : (
-            // Show review form (for new review or editing)
-            showReviewForm && (
-              <Surface style={styles.reviewFormCard} elevation={2}>
-                <Text style={styles.sectionTitle}>
-                  {isEditing ? 'Editar reseña' : 'Escribir reseña'}
-                </Text>
-                
-                {/* Rating Stars */}
-                <View style={styles.ratingSection}>
-                  <Text style={styles.ratingLabel}>Calificación:</Text>
-                  <View style={styles.starsContainer}>
-                    {renderRatingStars()}
-                  </View>
-                </View>
 
-                {/* Review Text Input */}
-                <TextInput
-                  mode="outlined"
-                  label="Escribe tu reseña (opcional)"
-                  value={reviewText}
-                  onChangeText={setReviewText}
-                  multiline
-                  numberOfLines={4}
-                  style={styles.reviewInput}
-                  outlineColor="rgba(164, 66, 48, 0.3)"
-                  activeOutlineColor="#a44230"
-                />
-
-                {/* Action Buttons */}
-                <View style={styles.buttonContainer}>
-                  {isEditing && (
-                    <Button
-                      mode="outlined"
-                      onPress={handleCancelEdit}
-                      style={styles.cancelButton}
-                      labelStyle={styles.cancelButtonLabel}
-                    >
-                      Cancelar
-                    </Button>
-                  )}
-                  <Button
-                    mode="contained"
-                    onPress={submitReview}
-                    loading={isSubmitting}
-                    disabled={isSubmitting || selectedRating === 0}
-                    style={[styles.submitButton, isEditing && styles.submitButtonWithCancel]}
-                    labelStyle={styles.submitButtonLabel}
-                  >
-                    {isSubmitting ? 'Enviando...' : (isEditing ? 'Actualizar' : 'Enviar reseña')}
-                  </Button>
-                </View>
-              </Surface>
-            )
+        {/* Ingredients Section */}
+        <Surface style={styles.ingredientsCard} elevation={2}>
+          <Text style={styles.sectionTitle}>Ingredientes</Text>
+          <Text style={styles.ingredientsText}>{formatIngredients()}</Text>
+          {shouldShowToggle() && (
+            <TouchableOpacity 
+            style={styles.toggleButton}
+            onPress={() => setShowAllIngredients(!showAllIngredients)}
+            >
+              <Text style={styles.toggleButtonText}>
+                {showAllIngredients ? 'Ver menos' : 'Ver más'}
+              </Text>
+            </TouchableOpacity>
           )}
-        </>
-      )}
-
-      {/* Loading indicator */}
-      {isLoadingReview && userId && (
-        <Surface style={styles.loadingCard} elevation={2}>
-          <Text style={styles.loadingText}>Cargando reseña...</Text>
         </Surface>
-      )}
+        
+        {/* Existing Review Display Section */}
+        {userId && !isLoadingReview && existingReview && (
+          <Surface style={styles.existingReviewCard} elevation={2}>
+            <Text style={styles.sectionTitle}>Tu reseña</Text>
+            <View style={styles.reviewContent}>
+              <Text style={styles.existingStars}>{renderStars(existingReview.stars)}</Text>
+              {existingReview.review && (
+                <Text style={styles.existingReviewText}>{existingReview.review}</Text>
+              )}
+              <Text style={styles.reviewDate}>
+                Publicada el {formatDate(existingReview.created_at)}
+              </Text>
+            </View>
+          </Surface>
+        )}
 
-      {/* Login prompt */}
-      {!userId && (
-        <Surface style={styles.loginPromptCard} elevation={2}>
-          <Text style={styles.loginPromptText}>
-            Inicia sesión para escribir una reseña
-          </Text>
-        </Surface>
-      )}
+        {/* Loading indicator */}
+        {isLoadingReview && userId && (
+          <Surface style={styles.loadingCard} elevation={2}>
+            <Text style={styles.loadingText}>Cargando reseña...</Text>
+          </Surface>
+        )}
+
+        {/* Login prompt */}
+        {!userId && (
+          <Surface style={styles.loginPromptCard} elevation={2}>
+            <Text style={styles.loginPromptText}>
+              Inicia sesión para escribir una reseña
+            </Text>
+          </Surface>
+        )}
+      </ScrollView>
+
+      {/* Review Modal */}
+      <Modal
+        visible={showReviewModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleCancelModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {isEditing ? 'Editar reseña' : 'Escribir reseña'}
+            </Text>
+            
+            {/* Rating Stars */}
+            <View style={styles.modalRatingSection}>
+              <Text style={styles.ratingLabel}>Calificación:</Text>
+              <View style={styles.starsContainer}>
+                {renderRatingStars()}
+              </View>
+            </View>
+
+            {/* Review Text Input */}
+            <TextInput
+              mode="outlined"
+              label="Escribe tu reseña (opcional)"
+              value={reviewText}
+              onChangeText={setReviewText}
+              multiline
+              numberOfLines={4}
+              style={styles.modalReviewInput}
+              outlineColor="rgba(164, 66, 48, 0.3)"
+              activeOutlineColor="#a44230"
+            />
+
+            {/* Action Buttons */}
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={handleCancelModal}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalSubmitButton,
+                  (isSubmitting || selectedRating === 0) && styles.modalSubmitButtonDisabled
+                ]}
+                onPress={submitReview}
+                disabled={isSubmitting || selectedRating === 0}
+              >
+                <Text style={styles.modalSubmitButtonText}>
+                  {isSubmitting ? 'Enviando...' : (isEditing ? 'Actualizar' : 'Enviar reseña')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -406,14 +429,17 @@ export default function ProductDetailContent({ product, userId }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
     padding: 20,
-    gap: 16,
   },
   headerCard: {
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
     overflow: 'hidden',
+    marginBottom: 16,
   },
   imageContainer: {
     marginBottom: 20,
@@ -467,6 +493,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
   },
   ratingContainer: {
     alignItems: 'center',
@@ -480,16 +507,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     fontWeight: '500',
+    marginBottom: 16,
+  },
+  calificarButton: {
+    backgroundColor: '#a44230',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+  },
+  calificarButtonLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   existingReviewCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 16,
   },
   reviewContent: {
@@ -509,66 +542,12 @@ const styles = StyleSheet.create({
     color: '#999999',
     fontStyle: 'italic',
   },
-  reviewFormCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-  },
-  ratingSection: {
-    marginBottom: 20,
-  },
-  ratingLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 12,
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  starButton: {
-    paddingHorizontal: 4,
-  },
-  starText: {
-    fontSize: 32,
-  },
-  reviewInput: {
-    marginBottom: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    borderColor: '#a44230',
-    borderRadius: 12,
-  },
-  cancelButtonLabel: {
-    color: '#a44230',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  submitButton: {
-    flex: 1,
-    backgroundColor: '#a44230',
-    borderRadius: 12,
-  },
-  submitButtonWithCancel: {
-    flex: 1,
-  },
-  submitButtonLabel: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   loadingCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
+    marginBottom: 16,
   },
   loadingText: {
     fontSize: 16,
@@ -579,6 +558,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
+    marginBottom: 16,
   },
   loginPromptText: {
     fontSize: 16,
@@ -589,11 +569,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
   },
   ingredientsCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -618,6 +600,86 @@ const styles = StyleSheet.create({
   toggleButtonText: {
     fontSize: 14,
     color: '#a44230',
+    fontWeight: '600',
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalRatingSection: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  ratingLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 12,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starButton: {
+    paddingHorizontal: 4,
+  },
+  starText: {
+    fontSize: 32,
+  },
+  modalReviewInput: {
+    marginBottom: 24,
+    backgroundColor: '#FFFFFF',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#a44230',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    color: '#a44230',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalSubmitButton: {
+    flex: 1,
+    backgroundColor: '#a44230',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalSubmitButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
+  modalSubmitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
