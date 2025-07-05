@@ -26,6 +26,8 @@ def get_ingredients_and_products_for_condition(G, condition):
                 products.add(product)
     return products
 
+
+
 #recordar q esto evalua solo una condicion
 
 print(get_ingredients_and_products_for_condition(graph,"dark_spot" ))
