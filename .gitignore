@@ -44,3 +44,7 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# lambda dependencies
+lambdas/
+.env

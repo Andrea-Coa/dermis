@@ -1,0 +1,123 @@
+{
+    "Resources": {
+      "MyTestBucket81062430": {
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+          "BucketName": "my-bucket-andrea-demo"
+        },
+        "UpdateReplacePolicy": "Delete",
+        "DeletionPolicy": "Delete",
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/MyTestBucket/Resource"
+        }
+      },
+      "MySecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Allow SSH and PostgreSQL",
+          "GroupName": "MySecurityGroup",
+          "SecurityGroupIngress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "FromPort": 22,
+              "IpProtocol": "tcp",
+              "ToPort": 22
+            },
+            {
+              "CidrIp": "0.0.0.0/0",
+              "FromPort": 5432,
+              "IpProtocol": "tcp",
+              "ToPort": 5432
+            }
+          ],
+          "VpcId": "vpc-0f45898157d0cc6e2"
+        },
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/MySecurityGroup"
+        }
+      },
+      "MyEIP": {
+        "Type": "AWS::EC2::EIP",
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/MyEIP"
+        }
+      },
+      "MyEC2Instance": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+          "ImageId": "ami-020cba7c55df1f615",
+          "InstanceType": "t2.micro",
+          "KeyName": "vockey",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeviceIndex": "0",
+              "GroupSet": [
+                {
+                  "Ref": "MySecurityGroup"
+                }
+              ],
+              "SubnetId": "subnet-0ec7215dd9e7cb251"
+            }
+          ],
+          "UserData": {
+            "Fn::Base64": {
+              "Fn::Join": [
+                "",
+                [
+                  "#!/bin/bash\n",
+                  "apt-get update -y\n",
+                  "apt-get install -y postgresql curl\n",
+                  "\n",
+                  "# Download init.sql from S3 (creates the DB)\n",
+                  "curl -o /tmp/init.sql \"{{INIT_SCRIPT_URL}}\"\n",
+                  "sudo -u postgres psql -f /tmp/init.sql\n",
+                  "\n",
+                  "# Download schema.sql from S3 (creates tables in the DB)\n",
+                  "curl -o /tmp/schema.sql \"{{SCHEMA_SCRIPT_URL}}\"\n",
+                  "sudo -u postgres psql -d dermis_users -f /tmp/schema.sql\n"
+                ]
+              ]
+            }
+          }
+        },
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/MyEC2Instance"
+        }
+      },
+      "EIPAssoc": {
+        "Type": "AWS::EC2::EIPAssociation",
+        "Properties": {
+          "AllocationId": {
+            "Fn::GetAtt": [
+              "MyEIP",
+              "AllocationId"
+            ]
+          },
+          "InstanceId": {
+            "Ref": "MyEC2Instance"
+          }
+        },
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/EIPAssoc"
+        }
+      },
+      "CDKMetadata": {
+        "Type": "AWS::CDK::Metadata",
+        "Properties": {
+          "Analytics": "v2:deflate64:H4sIAAAAAAAA/12NwWrDMBBEvyV7DLKaOj3llril5NKY+GhKkeVNqtiWgnaVYIT/vdhOofQ0MPP2bSrTVSpXC3WnRNdN0ppKxoKVboS601ektYy7oBvkMoIK7F6xRcZDdUHNBBv2AQVUE/GhOoQNLEGAx87dVJu71ugeNlAjsXc9DJ8iO9lZKOaYmTI+JJPgLzbvg0CdypidbIE6eMP9u3fhOmJv+3yMvSVWVuOj2hI5bRQbZ4dBZIHYdUckF7zGEpYwffgt/u25dzdTo98pQrElQi5YnY09jzeHwNfAg8h7/nb2aS2fU/myuJAxiQ+WTYfyOOcPQKjmQVwBAAA="
+        },
+        "Metadata": {
+          "aws:cdk:path": "StorageStack/CDKMetadata/Default"
+        }
+      }
+    },
+    "Outputs": {
+      "EC2PublicIP": {
+        "Value": {
+          "Ref": "MyEIP"
+        }
+      }
+    }
+  }
+  
