@@ -28,7 +28,7 @@ La data utilizada para el EDA se puede encontrar en este [Google Drive](https://
 
 ---
 
-## 🧠 **Arquitectura del Sistema DERmis**
+## 🧠 **Arquitectura del flujo de Dermis**
 
 Nuestro sistema combina aprendizaje automático, análisis de grafos, scraping de productos, y reglas basadas en literatura dermatológica para generar rutinas de skincare personalizadas.
 
