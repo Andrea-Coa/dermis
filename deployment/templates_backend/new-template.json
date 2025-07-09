@@ -1,0 +1,604 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Backend Stack: Lambdas organized by domain with proper API Gateway routing",
+
+  "Parameters": {
+    "LambdaExecutionRoleArn": {
+      "Type": "String",
+      "Description": "IAM role ARN for Lambda functions"
+    }
+  },
+
+  "Resources": {
+    "TempLoginUsersLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-login-users-dermis",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/login_users_dermis.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempRegisterUsersLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-register-users-dermis",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/register_users_dermis.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempProductReviewsLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-product-reviews",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/product_reviews.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempProductsBookLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-products-book",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/products_book.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempRegisterProductsBook": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-register-products-book",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.11",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/register_products_book.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempRoutineReviewLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-routine-review",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/routine_review.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempRoutineUsageLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-routine-usage",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.10",
+        "Timeout": 30,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/routine_usage.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempRoutinesLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-routines",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/routines.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempScrapedProductsLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "temp-scraped-products",
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python3.12",
+        "Timeout": 15,
+        "Code": {
+          "S3Bucket": "dermiscreationfiles",
+          "S3Key": "lambdas/scraped_products.zip"
+        },
+        "Role": {
+          "Ref": "LambdaExecutionRoleArn"
+        }
+      }
+    },
+
+    "TempUsersHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "temp-users-api",
+        "ProtocolType": "HTTP",
+        "CorsConfiguration": {
+          "AllowHeaders": ["*"],
+          "AllowMethods": ["*"],
+          "AllowOrigins": ["*"]
+        }
+      }
+    },
+
+    "TempUsersStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": { "Ref": "TempUsersHttpApi" },
+        "StageName": "prod",
+        "AutoDeploy": true
+      }
+    },
+
+    "TempLoginUsersIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempUsersHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempLoginUsersLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempRegisterUsersIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempUsersHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempRegisterUsersLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempLoginUsersRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempUsersHttpApi" },
+        "RouteKey": "ANY /login_users_dermis",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempLoginUsersIntegration" }]]
+        }
+      }
+    },
+
+    "TempRegisterUsersRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempUsersHttpApi" },
+        "RouteKey": "ANY /register_users_dermis",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempRegisterUsersIntegration" }]]
+        }
+      }
+    },
+
+    "TempLoginUsersLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempLoginUsersLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempUsersHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempRegisterUsersLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempRegisterUsersLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempUsersHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempProductsHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "temp-products-api",
+        "ProtocolType": "HTTP",
+        "CorsConfiguration": {
+          "AllowHeaders": ["*"],
+          "AllowMethods": ["*"],
+          "AllowOrigins": ["*"]
+        }
+      }
+    },
+
+    "TempProductsStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "StageName": "prod",
+        "AutoDeploy": true
+      }
+    },
+
+    "TempProductsBookIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempProductsBookLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempRegisterProductsBookIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempRegisterProductsBook.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempProductReviewsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempProductReviewsLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempScrapedProductsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempScrapedProductsLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempProductsBookRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "RouteKey": "ANY /products_book",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempProductsBookIntegration" }]]
+        }
+      }
+    },
+
+    "TempRegisterProductsBookRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "RouteKey": "ANY /register_products_book",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempRegisterProductsBookIntegration" }]]
+        }
+      }
+    },
+
+    "TempProductReviewsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "RouteKey": "ANY /product_reviews",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempProductReviewsIntegration" }]]
+        }
+      }
+    },
+
+    "TempScrapedProductsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempProductsHttpApi" },
+        "RouteKey": "ANY /scraped_products",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempScrapedProductsIntegration" }]]
+        }
+      }
+    },
+
+    "TempProductsBookLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempProductsBookLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempProductsHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempRegisterProductsBookLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempRegisterProductsBook" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempProductsHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempProductReviewsLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempProductReviewsLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempProductsHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempScrapedProductsLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempScrapedProductsLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempProductsHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempRoutinesHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "temp-routines-api",
+        "ProtocolType": "HTTP",
+        "CorsConfiguration": {
+          "AllowHeaders": ["*"],
+          "AllowMethods": ["*"],
+          "AllowOrigins": ["*"]
+        }
+      }
+    },
+
+    "TempRoutinesStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "StageName": "prod",
+        "AutoDeploy": true
+      }
+    },
+
+    "TempRoutinesIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempRoutinesLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempRoutineReviewIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempRoutineReviewLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempRoutineUsageIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempRoutineUsageLambda.Arn}/invocations"
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "TempRoutinesRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "RouteKey": "ANY /routines",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempRoutinesIntegration" }]]
+        }
+      }
+    },
+
+    "TempRoutineReviewRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "RouteKey": "ANY /routine_review",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempRoutineReviewIntegration" }]]
+        }
+      }
+    },
+
+    "TempRoutineUsageRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "TempRoutinesHttpApi" },
+        "RouteKey": "ANY /routine_usage",
+        "Target": {
+          "Fn::Join": ["/", ["integrations", { "Ref": "TempRoutineUsageIntegration" }]]
+        }
+      }
+    },
+
+    "TempRoutinesLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempRoutinesLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempRoutinesHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempRoutineReviewLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempRoutineReviewLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempRoutinesHttpApi}/*/*"
+        }
+      }
+    },
+
+    "TempRoutineUsageLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "TempRoutineUsageLambda" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TempRoutinesHttpApi}/*/*"
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "TempLoginUsersLambdaArn": {
+      "Description": "ARN of the temp login users Lambda function",
+      "Value": { "Ref": "TempLoginUsersLambda" }
+    },
+    "TempRegisterUsersLambdaArn": {
+      "Description": "ARN of the temp register users Lambda function",
+      "Value": { "Ref": "TempRegisterUsersLambda" }
+    },
+    "TempProductReviewsLambdaArn": {
+      "Description": "ARN of the temp product reviews Lambda function",
+      "Value": { "Ref": "TempProductReviewsLambda" }
+    },
+    "TempProductsBookLambdaArn": {
+      "Description": "ARN of the temp products book Lambda function",
+      "Value": { "Ref": "TempProductsBookLambda" }
+    },
+    "TempRegisterProductsBookArn": {
+      "Description": "ARN of the temp register products book Lambda function",
+      "Value": { "Ref": "TempRegisterProductsBook" }
+    },
+    "TempRoutineReviewLambdaArn": {
+      "Description": "ARN of the temp routine review Lambda function",
+      "Value": { "Ref": "TempRoutineReviewLambda" }
+    },
+    "TempRoutineUsageLambdaArn": {
+      "Description": "ARN of the temp routine usage Lambda function",
+      "Value": { "Ref": "TempRoutineUsageLambda" }
+    },
+    "TempRoutinesLambdaArn": {
+      "Description": "ARN of the temp routines Lambda function",
+      "Value": { "Ref": "TempRoutinesLambda" }
+    },
+    "TempScrapedProductsLambdaArn": {
+      "Description": "ARN of the temp scraped products Lambda function",
+      "Value": { "Ref": "TempScrapedProductsLambda" }
+    },
+    "TempUsersApiEndpoint": {
+      "Description": "API Gateway endpoint URL for temp users API",
+      "Value": {
+        "Fn::Sub": "https://${TempUsersHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+      }
+    },
+    "TempProductsApiEndpoint": {
+      "Description": "API Gateway endpoint URL for temp products API",
+      "Value": {
+        "Fn::Sub": "https://${TempProductsHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+      }
+    },
+    "TempRoutinesApiEndpoint": {
+      "Description": "API Gateway endpoint URL for temp routines API",
+      "Value": {
+        "Fn::Sub": "https://${TempRoutinesHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+      }
+    }
+  }
+}
