@@ -4,26 +4,24 @@
 Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades específicas.
 
 ### Data Wrangling
-Nuestro proyecto maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
-* **Imágenes**: Utilizamos un volúmen de imágenes de rostros para entrenar los dos modelos de predicción que manejamos: *Logistic Regression* (para la predicción de condiciones en la piel), *Convolutional Neural Network* (para la predicción de tipo de piel ). En ambos aplicamos *data augmentation* para no sesgar a clases minoritarias, obtener data más granular como imágenes con distinta iluminación y orientación (horizontal).Luego, como se puede observar en el extracto de pipeline, Fig. 1, uniformizamos el tamaño de las imágenes para el correcto manejo de parámetros y buenas prácticas.
+Nuestro proyecto maneja varios tipos de datos: imágenes, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
+* **Imágenes**: Utilizamos un volúmen de imágenes de rostros para entrenar los dos modelos de predicción que manejamos: *Logistic Regression* (para la predicción de condiciones en la piel), *Convolutional Neural Network (240 imgs)* (para la predicción de tipo de piel ). En ambos aplicamos *data augmentation* para no sesgar a clases minoritarias, obtener data más granular como imágenes con distinta iluminación y orientación (horizontal).Luego, como se puede observar en el extracto de pipeline, Fig. 1, uniformizamos el tamaño de las imágenes para el correcto manejo de parámetros y buenas prácticas.
 
 ![Fig. 1](/dermis/assets/pipeline_im.png)
 
-### Análisis Exploratorio de Datos (EDA)
+Cabe resaltar, que para la inferencia de los modelos, las imágenes ingresadas por los usuarios, también pasarán por el pipeline de corte de tamaño.
+* **Archivos pdf's**: Utilizamos archivos pdf's ya que las fichas técnicas de los químicos presentes en ingredientes de productos de cuidado de la piel, fueron obtenidos en ese formato. En este caso, el preprocesamiento más que todo fue poder extraer la data dentro del pdf, es decir, de cada ingrediente químico poder obtener las condiciones a las que combatia o actuaba y almacenarlos en un csv.
+![Fig. 2](/dermis/assets/pipeline_ft.png)
 
-1. **Familiarizarse con los datasets**: comprender la estructura, calidad y características generales de los datos relacionados con imperfecciones de la piel, ingredientes cosméticos y productos de skincare.
-2. **Identificar vacíos de información**: detectar qué datos faltan o serían necesarios recolectar en fases posteriores (por ejemplo, tipo de piel, edad, sensibilidad, etc.).
-3. **Analizar correlaciones relevantes**:
-
-   * Entre ingredientes y funciones (por ejemplo, qué ingredientes se asocian con antiinflamatorio, hidratación, etc.).
-   * Entre ingredientes y posibles efectos adversos (identificación de químicos dañinos).
-   * Entre tipos de productos y su aplicabilidad a distintas condiciones cutáneas.
-4. **Detectar necesidades de preprocesamiento**: definir qué transformaciones o limpieza se requerirá para futuras etapas del pipeline (como codificación, normalización, manejo de datos faltantes o unificación de nombres de ingredientes).
-5. **Evaluar la cobertura de imperfecciones tratables**: verificar si los productos disponibles en la base pueden abordar adecuadamente las imperfecciones más comunes detectadas.
-
+* **csv' s**: La data de productos scrapeados de las farmacias y distribuidoras de productos, fueron alamacenados en csv's y analizados exhaustivamente para uniformizar la escritura de los ingredientes, categorízas de los productos, como : *"moisturizer"*, *"serums"*...
 La data utilizada para el EDA se puede encontrar en este [Google Drive](https://drive.google.com/drive/folders/108uniNHXUsphg3Wv_l5kBHt06mjvnzr0?usp=sharing).
 
 ---
+### Data Modeling
+
+
+* **Transformer | Self attention entre los ingredientes de productos de nuestro *dataset* y los del libro**
+Para explicar
 
 ## 🧠 **Arquitectura del flujo de Dermis**
 
