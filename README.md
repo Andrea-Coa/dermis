@@ -66,7 +66,24 @@ Esta red permite filtrar productos alineados con las necesidades de la piel del 
 * Comparación entre productos del grafo y productos del libro con transformer de atención para obtener el set final personalizado.
 
 ```python
-# Aquí va el bloque de código del Transformer de Atención
+    def recommend(self, input_products):
+        recommendations = defaultdict(list)
+
+        for product in input_products:
+            X = self._vectorize_product(product)
+
+            for category, model in self.models.items():
+                if category in self.routine['steps']:
+                    with torch.no_grad():
+                        score = torch.sigmoid(model(X)).item()
+                    recommendations[category].append((product, score))
+        final_recommendations = {}
+        for category, candidates in recommendations.items():
+            if candidates:
+                candidates.sort(key=lambda x: x[1], reverse=True)
+                final_recommendations[category] = candidates[0][0]
+
+        return final_recommendations
 ```
 
 * Los productos finales se clasifican según su función: **Limpiar**, **Tratar**, **Proteger**.
