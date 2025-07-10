@@ -1,9 +1,9 @@
 ## **DERMIS** Tu piel, nuestra ciencia  
--
 Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades especpificas.
 ---
 ### Data Wrangling
-Nuestro productos de datos maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
+Nuestro proyecto maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
+* **Imágenes**
 
 
 ### Análisis Exploratorio de Datos (EDA)
@@ -93,6 +93,10 @@ En la app, el usuario puede:
 * **Modelos:** Scikit-learn (Regresión Logística), PyTorch (CNN y Transformer)
 * **Frontend:** React Native
 * **Base de Datos:** PostgreSQL + base de datos de productos scrappeada
+
+
+
+## **Builded By** Camila Acosta | Andrea Coa | Jimena Gurbillón
 
 
 
