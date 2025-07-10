@@ -1,6 +1,7 @@
-## **DERMIS** Tu piel, nuestra ciencia  
-![](/dermis/assets/logo_dermis_frase.png)
-Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades especpificas.
+
+![](/dermis/assets/logo_dermis_frase.png)  
+
+Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades específicas.
 ---
 ### Data Wrangling
 Nuestro proyecto maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
