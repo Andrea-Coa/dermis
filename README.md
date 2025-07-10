@@ -95,6 +95,7 @@ Esta red permite filtrar productos alineados con las necesidades de la piel del 
 # ⚙️ **Backend**
 
 El backend de Dermis tiene varios componentes. Los servidores que sirven los modelos están en una aplicación de Flask, y lo restante (usuarios, productos) está en Lambda y API Gateway de AWS. 
+ ![Fig. 5](/dermis/assets/back.png) 
 
 ## **Modelos de Machine Learning**
 
