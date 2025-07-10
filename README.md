@@ -18,7 +18,7 @@ La data utilizada para el EDA se puede encontrar en este [Google Drive](https://
 
 ---
 ### Data Modeling
-
+![Fig. 3](/dermis/assets/arqui.png)
 
 * **Transformer | Self attention entre los ingredientes de productos de nuestro *dataset* y los del libro**
 Para explicar
@@ -36,13 +36,13 @@ Nuestro sistema combina aprendizaje automático, análisis de grafos, scraping d
 ### 2. **Análisis de imágenes**
 
 * **Foto Frontal → Modelo de Regresión Logística**
-
+  ![Fig. 4](/dermis/assets/ref_log.png)
 ```python
 # Aquí va el bloque de código de Regresión Logística
 ```
 
 * **Foto Lateral → Red Neuronal Convolucional (CNN)**
-
+ ![Fig. 5](/dermis/assets/cnn_pipe.png) 
 ```python
 # Aquí va el bloque de código de CNN
 ```
