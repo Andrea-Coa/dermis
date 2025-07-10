@@ -3,7 +3,7 @@
 ---
 Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades específicas.
 
-### Data Wrangling
+# Data Wrangling
 Nuestro proyecto maneja varios tipos de datos: imágenes, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
 * **Imágenes**: Utilizamos un volúmen de imágenes de rostros para entrenar los dos modelos de predicción que manejamos: *Logistic Regression* (para la predicción de condiciones en la piel), *Convolutional Neural Network (240 imgs)* (para la predicción de tipo de piel ). En ambos aplicamos *data augmentation* para no sesgar a clases minoritarias, obtener data más granular como imágenes con distinta iluminación y orientación (horizontal).Luego, como se puede observar en el extracto de pipeline, Fig. 1, uniformizamos el tamaño de las imágenes para el correcto manejo de parámetros y buenas prácticas.
 
@@ -23,7 +23,7 @@ La data utilizada para el EDA se puede encontrar en este [Google Drive](https://
 * **Transformer | Self attention entre los ingredientes de productos de nuestro *dataset* y los del libro**
 Para explicar
 
-## 🧠 **Arquitectura del flujo de Dermis**
+# 🧠 **Arquitectura del flujo de Dermis**
 
 Nuestro sistema combina aprendizaje automático, análisis de grafos, scraping de productos, y reglas basadas en literatura dermatológica para generar rutinas de skincare personalizadas.
 
@@ -90,7 +90,79 @@ Esta red permite filtrar productos alineados con las necesidades de la piel del 
 
 ---
 
-## 📱 **Frontend / Interfaz de Usuario**
+# ⚙️ **Backend**
+
+El backend de Dermis tiene varios componentes. Los servidores que sirven los modelos están en una aplicación de Flask, y lo restante (usuarios, productos) está en Lambda y API Gateway de AWS. 
+
+## **Modelos de Machine Learning**
+
+Se recomienda usar versión 3.11 de Python.
+
+### **Detección de tipo y condiciones de la piel**:
+
+```{bash}
+cd .\backend\redes\
+```
+
+Crear un entorno virtual de Python e instalar dependencias:
+
+```{bash}
+python -m venv .venv
+.\.venv\Scripts\activate
+
+pip install -r requirements_with_versions.txt
+```
+```{bash}
+python .\app.py
+```
+
+El puerto por default es 5000, pero se puede cambiar en el archivo `app.py`.
+
+
+### **Creación de rutinas:**
+
+```{bash}
+cd .\backend\transformer\
+```
+
+Crear un entorno virtual de Python e instalar dependencias:
+
+```{bash}
+python -m venv .venv
+.\.venv\Scripts\activate
+
+pip install -r requirements.txt
+```
+
+```{bash}
+python .\app.py
+```
+
+El puerto por default es 5001, pero se puede cambiar en el archivo `app.py`.
+
+
+### Deployment en AWS
+
+Para las bases de datos y otros componentes del backend, utilizamos servicios de AWS. Es necesario que la cuenta tenga los permisos adecuados para crear y gestionar los siguientes recursos:
+
+- CloudFormation,
+- Secrets Manager,
+- EC2,
+- S3,
+- Lambda, 
+- API Gateway.
+
+A continuación se detallan los pasos para desplegar el backend en AWS:
+
+1. Configuración de credenciales de AWS: Asegúrate de tener instalado AWS CLI y configurado con tus credenciales de AWS en el archivo ```~\.aws```. Puedes editarlo manualmente o utilizar el comando:
+
+   ```bash
+   aws configure
+   ```
+
+* ****
+
+# 📱 **Frontend / Interfaz de Usuario**
 
 En la app, el usuario puede:
 
@@ -103,21 +175,34 @@ En la app, el usuario puede:
 * Generar con un clic las **instrucciones de uso paso a paso**.
 * Brindar **feedback sobre la rutina** recibida.
 
+Para utilizar el frontend se requiere ```npm```. Además, instalar **Expo Go** en el dispositivo móvil para visualizar la app:
+
+```{bash}
+cd .\dermis\
+```
+
+Instalar dependencias:
+
+```{bash}
+npm install
+```
+
+Correr la aplicación:
+
+```{bash}
+npx expo start
+```
+
 ---
 
-## 🔧 **Tecnologías Utilizadas**
+# 🔧 **Tecnologías Utilizadas**
 
+* **Scraping** Python: BeautifulSoup, Selenium
 * **Backend:** Python (Flask), scraping con BeautifulSoup
 * **Modelos:** Scikit-learn (Regresión Logística), PyTorch (CNN y Transformer)
-* **Frontend:** React Native
-* **Base de Datos:** PostgreSQL + base de datos de productos scrappeada
+* **Frontend:** React Native con Expo
+* **Base de Datos:** PostgreSQL + S3
 
 
 
-## **Builded By** Camila Acosta | Andrea Coa | Jimena Gurbillón
-
-
-
----
-
-
+## **Buit By** Camila Acosta | Andrea Coa | Jimena Gurbillón
