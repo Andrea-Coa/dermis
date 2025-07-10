@@ -37,8 +37,10 @@ Nuestro sistema combina aprendizaje automático, análisis de grafos, scraping d
 
 * **Foto Frontal → Modelo de Regresión Logística**
   ![Fig. 4](/dermis/assets/reg_log.png)
+Este proyecto usa EfficientNet-B0 preentrenado como extractor de características para imágenes, eliminando su capa final. Las imágenes se transforman (224x224, ToTensor) y se procesan con un DataLoader. Las representaciones obtenidas se usan como entrada para un modelo de clasificación multietiqueta basado en LogisticRegression, envuelto con MultiOutputClassifier para manejar múltiples etiquetas por muestra. Se entrena usando class_weight='balanced' para mitigar el desbalance de clases.
 ```python
-# Aquí va el bloque de código de Regresión Logística
+logistic = MultiOutputClassifier(LogisticRegression(max_iter=1000, class_weight='balanced'))
+logistic.fit(X, y)
 ```
 
 * **Foto Lateral → Red Neuronal Convolucional (CNN)**
