@@ -149,7 +149,7 @@ class SkincareRecommender:
 
             self.models[category] = model
 
-    def recommend(self, input_products): #aqui es la webada pq retorna vació? tenemos que forzar q retorne 1 por cadetogria, asi sea una similitud baja, no puede ser em,pmty
+    def recommend(self, input_products): 
         recommendations = defaultdict(list)
 
         for product in input_products: #los deel grafo ?
