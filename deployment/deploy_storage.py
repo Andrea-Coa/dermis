@@ -1,68 +1,88 @@
 import boto3
-import os
-from dotenv import load_dotenv
-from botocore.exceptions import ClientError, BotoCoreError
 import json
+import os
 
+# --- Config ---
+bucket_name = "dermiscreationfiles"
+region = "us-east-1"
+init_path = "D:/Documents-D/Projects/dpd/backend/scripts/init.sql"
+schema_path = "D:/Documents-D/Projects/dpd/backend/scripts/schema.sql"
+template_path = "new-template.json"       # Input template with placeholders
+output_path = "new-template-final.json"   # Output filled-in template
 
-STACK_NAME = "dermis-storage-v1"
-TEMPLATE_FILE = "templates_storage/new-template-final.json"  # Save your JSON template in this file
-REGION = "us-east-1"  # Change to your region
+# --- Object keys in S3 ---
+init_key = "init.sql"
+schema_key = "schema.sql"
 
-def load_template(file_path):
-    try:
-        with open(file_path, 'r') as f:
-            template_body = f.read()
-        # Optional: validate it parses
-        json.loads(template_body)
-        return template_body
-    except FileNotFoundError:
-        print(f"❌ Error: Template file '{file_path}' not found.")
-        exit(1)
-    except json.JSONDecodeError as e:
-        print(f"❌ Error: Invalid JSON - {e}")
-        exit(1)
+# --- Create S3 client ---
+s3 = boto3.client("s3", region_name=region)
 
-def deploy_stack(template_body):
-    cf = boto3.client("cloudformation", region_name=REGION)
+# --- Create bucket if it doesn't exist ---
+try:
+    if region == "us-east-1":
+        s3.create_bucket(Bucket=bucket_name)
+    else:
+        s3.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={"LocationConstraint": region}
+        )
+    print(f"✅ Bucket '{bucket_name}' created.")
+except s3.exceptions.BucketAlreadyOwnedByYou:
+    print(f"⚠️ Bucket '{bucket_name}' already exists and is owned by you.")
+except s3.exceptions.BucketAlreadyExists:
+    print(f"❌ Bucket '{bucket_name}' already exists and may be owned by someone else.")
+except Exception as e:
+    print(f"❌ Error creating bucket: {e}")
 
-    try:
-        # Check if stack exists
-        cf.describe_stacks(StackName=STACK_NAME)
-        stack_exists = True
-    except ClientError as e:
-        if "does not exist" in str(e):
-            stack_exists = False
-        else:
-            print(f"❌ Error checking stack: {e}")
-            exit(1)
+# --- Upload init.sql ---
+try:
+    s3.upload_file(init_path, bucket_name, init_key)
+    print(f"✅ Uploaded '{init_path}' to '{bucket_name}/{init_key}'")
+except Exception as e:
+    print(f"❌ Error uploading init.sql: {e}")
 
-    try:
-        if stack_exists:
-            print(f"🔁 Updating stack '{STACK_NAME}'...")
-            response = cf.update_stack(
-                StackName=STACK_NAME,
-                TemplateBody=template_body,
-                Capabilities=["CAPABILITY_NAMED_IAM"]
-            )
-        else:
-            print(f"🚀 Creating stack '{STACK_NAME}'...")
-            response = cf.create_stack(
-                StackName=STACK_NAME,
-                TemplateBody=template_body,
-                Capabilities=["CAPABILITY_NAMED_IAM"]
-            )
+# --- Upload schema.sql ---
+try:
+    s3.upload_file(schema_path, bucket_name, schema_key)
+    print(f"✅ Uploaded '{schema_path}' to '{bucket_name}/{schema_key}'")
+except Exception as e:
+    print(f"❌ Error uploading schema.sql: {e}")
 
-        print(f"✅ Stack operation started. Stack ID:\n{response['StackId']}")
+# --- Generate presigned URLs ---
+try:
+    init_url = s3.generate_presigned_url(
+        ClientMethod="get_object",
+        Params={"Bucket": bucket_name, "Key": init_key},
+        ExpiresIn=3600
+    )
+    schema_url = s3.generate_presigned_url(
+        ClientMethod="get_object",
+        Params={"Bucket": bucket_name, "Key": schema_key},
+        ExpiresIn=3600
+    )
+    print("✅ Presigned URLs generated.")
+except Exception as e:
+    raise RuntimeError(f"❌ Failed to generate presigned URLs: {e}")
 
-    except ClientError as e:
-        if "No updates are to be performed" in str(e):
-            print("ℹ️ No changes detected. Stack is already up to date.")
-        else:
-            print(f"❌ Stack operation failed:\n{e}")
-            exit(1)
+# --- Load template and replace placeholders ---
+with open(template_path, "r", encoding="utf-8") as f:
+    template = json.load(f)
 
-if __name__ == "__main__":
-    print("📦 Loading CloudFormation template...")
-    template = load_template(TEMPLATE_FILE)
-    deploy_stack(template)
+def replace_placeholders(obj):
+    if isinstance(obj, dict):
+        return {k: replace_placeholders(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [replace_placeholders(v) for v in obj]
+    elif isinstance(obj, str):
+        obj = obj.replace("{{INIT_SCRIPT_URL}}", init_url)
+        obj = obj.replace("{{SCHEMA_SCRIPT_URL}}", schema_url)
+        return obj
+    return obj
+
+updated_template = replace_placeholders(template)
+
+# --- Save final updated template ---
+with open(output_path, "w", encoding="utf-8") as f:
+    json.dump(updated_template, f, indent=2)
+
+print(f"✅ Final template saved to '{output_path}'")

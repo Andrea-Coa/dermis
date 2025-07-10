@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from botocore.exceptions import ClientError, BotoCoreError
 
 template_path = "templates_backend/new-template.json"
-stack_name = "dermis-backend-v1"
+stack_name = "dermiscreationfiles"
 load_dotenv()
 
 # Retrieve the ARN from .env
