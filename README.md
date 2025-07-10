@@ -1,8 +1,8 @@
 
 ![](/dermis/assets/logo_dermis_frase.png)  
-
-Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades específicas.
 ---
+Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades específicas.
+
 ### Data Wrangling
 Nuestro proyecto maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
 * **Imágenes**: Utilizamos un volúmen de imágenes de rostros para entrenar los dos modelos de predicción que manejamos: *Logistic Regression* (para la predicción de condiciones en la piel), *Convolutional Neural Network* (para la predicción de tipo de piel ). En ambos aplicamos *data augmentation* para no sesgar a clases minoritarias, obtener data más granular como imágenes con distinta iluminación y orientación (horizontal).Luego, como se puede observar en el extracto de pipeline, Fig. 1, uniformizamos el tamaño de las imágenes para el correcto manejo de parámetros y buenas prácticas.
