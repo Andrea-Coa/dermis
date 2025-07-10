@@ -103,19 +103,19 @@ Se recomienda usar versión 3.11 de Python.
 
 ### **Detección de tipo y condiciones de la piel**:
 
-```{bash}
+```bash
 cd .\backend\redes\
 ```
 
 Crear un entorno virtual de Python e instalar dependencias:
 
-```{bash}
+```bash
 python -m venv .venv
 .\.venv\Scripts\activate
 
 pip install -r requirements_with_versions.txt
 ```
-```{bash}
+```bash
 python .\app.py
 ```
 
@@ -124,27 +124,27 @@ El puerto por default es 5000, pero se puede cambiar en el archivo `app.py`.
 
 ### **Creación de rutinas:**
 
-```{bash}
+```bash
 cd .\backend\transformer\
 ```
 
 Crear un entorno virtual de Python e instalar dependencias:
 
-```{bash}
+```bash
 python -m venv .venv
 .\.venv\Scripts\activate
 
 pip install -r requirements.txt
 ```
 
-```{bash}
+```bash
 python .\app.py
 ```
 
 El puerto por default es 5001, pero se puede cambiar en el archivo `app.py`.
 
 
-### Deployment en AWS
+### Deployment en AWS ☁️
 
 Para las bases de datos y otros componentes del backend, utilizamos servicios de AWS. Es necesario que la cuenta tenga los permisos adecuados para crear y gestionar los siguientes recursos:
 
@@ -157,11 +157,101 @@ Para las bases de datos y otros componentes del backend, utilizamos servicios de
 
 A continuación se detallan los pasos para desplegar el backend en AWS:
 
-1. Configuración de credenciales de AWS: Asegúrate de tener instalado AWS CLI y configurado con tus credenciales de AWS en el archivo ```~\.aws```. Puedes editarlo manualmente o utilizar el comando:
+```bash
+# Ir a la carpeta de deployment
+cd .\deployment\
+
+# Crear un entorno virtual para instalar las dependencias
+python -m venv .venv
+.venv\Scripts\activate
+
+# Instalar las dependencias necesarias
+pip install -r requirements.txt
+```
+
+1. **Configuración de credenciales de AWS**: 
+
+Asegúrate de tener instalado AWS CLI y configurado con tus credenciales de AWS en el archivo ```~\.aws```. Puedes editarlo manualmente o utilizar el comando:
 
    ```bash
    aws configure
    ```
+
+2. **Configuración de credenciales de BD Y API KEY**:
+
+Utilizamos una base de datos PostgreSQL que requiere de credenciales para conectarse. Por seguridad, evita usar las credenciales por defecto. Además, necesitamos una API Key para acceder a la API de Gemini. Crea un archivo `.env` en la carpeta `.\deployment` con el siguiente contenido:
+
+
+```plaintext
+# Credenciales de AWS: tu rol debe tener los permisos necesarios para acceder a los recursos de AWS.
+LABROLE_ARN=<tu-rol>
+
+# Database
+POSTGRES_DB_HOST=<host-de-base-de-datos>
+POSTGRES_DB_PORT=<puerto>
+POSTGRES_DB_NAME=dermis_users
+POSTGRES_DB_USER=<nombre-de-usuario>
+POSTGRES_DB_PASSWORD=<contraseña-de-usuario>
+
+# Gemini API KEY
+GEMINI_API_KEY=<tu-api-key>
+```
+
+Estos serán los secretos que se almacenarán en AWS Secrets Manager. Ejecuta:
+
+    python .\create_secret.py
+
+3. **Upload de recursos:**
+
+Para levantar la base de datos, subir los scripts de SQL a S3 de forma que la instancia EC2 pueda acceder a ellos. El siguiente comando subirá los archivos de la carpeta `dermis\backend\scripts` a un bucket de S3:
+
+```bash
+python .\upload_sql_scripts_to_s3.py
+````
+
+Además, es necesario almacenar los códigos fuentes de los Lambdas en S3. Ejecuta el siguiente comando para subir los archivos de la carpeta 
+`dermis\backend\lambdas` a un bucket de S3:
+```bash
+python .\upload_lambdas_code.py
+```
+
+4. **Despliegue de la infraestructura:**
+
+Las imágenes se guardan en un bucket de S3 y se procesan en una instancia EC2. Para desplegar la infraestructura, ejecuta los siguientes comandos:
+
+```bash
+# Storage
+python  .\deploy_storage.py
+```
+
+```bash
+# Backend
+python  .\deploy_backend.py
+```
+
+En los scripts no se incluye la creación del usuario cuyas credenciales fueron configuradas en el paso anterior. Asegúrate de crear un usuario con los permisos necesarios para acceder a la base de datos. Puedes conectarte por ssh a la instancia EC2 y ejecutar los scripts manualmente o utilizar un cliente de base de datos como DBeaver o pgAdmin:
+
+```sql
+CREATE USER <nombre-de-usuario> WITH PASSWORD <contraseña-de-usuario>;
+
+GRANT CONNECT ON DATABASE dermis_users TO <nombre-de-usuario>;
+
+GRANT USAGE ON SCHEMA public TO <nombre-de-usuario>;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO <nombre-de-usuario>;
+
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO <nombre-de-usuario>;
+
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO <nombre-de-usuario>;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO <nombre-de-usuario>;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO <nombre-de-usuario>;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT EXECUTE ON FUNCTIONS TO <nombre-de-usuario>;
+```
 
 * ****
 
@@ -180,19 +270,19 @@ En la app, el usuario puede:
 
 Para utilizar el frontend se requiere ```npm```. Además, instalar **Expo Go** en el dispositivo móvil para visualizar la app:
 
-```{bash}
+```bash
 cd .\dermis\
 ```
 
 Instalar dependencias:
 
-```{bash}
+```bash
 npm install
 ```
 
 Correr la aplicación:
 
-```{bash}
+```bash
 npx expo start
 ```
 
