@@ -36,7 +36,7 @@ Nuestro sistema combina aprendizaje automático, análisis de grafos, scraping d
 ### 2. **Análisis de imágenes**
 
 * **Foto Frontal → Modelo de Regresión Logística**
-  ![Fig. 4](/dermis/assets/ref_log.png)
+  ![Fig. 4](/dermis/assets/reg_log.png)
 ```python
 # Aquí va el bloque de código de Regresión Logística
 ```
