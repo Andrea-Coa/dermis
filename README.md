@@ -1,16 +1,10 @@
-## **DERMIS**
-
-**“Sistema inteligente de análisis de piel y recomendación personalizada de skincare”**
-
+## **DERMIS** Tu piel, nuestra ciencia  
+-
+Dermis es un producto de datos en formato de aplicación que mediante algoritmos de machine learning reconoce tu tipo de piel y condiciones para recomendarte una rutina de cuidado de la piel personalizada. Cada producto con ingredientes que ayuden a tus necesidades especpificas.
 ---
+### Data Wrangling
+Nuestro productos de datos maneja varios tipos de datos: imágenes, json's, csv's, pdf's. En esta sección especificaremos cómo preprocesamos cada uno y cuál es su función en el proyecto.
 
-## 🎯 **Objetivo General del Proyecto**
-
-Desarrollar un producto de datos que permita identificar imperfecciones cutáneas a partir de datos disponibles (imágenes o etiquetas) y, en base a ello, recomendar productos de skincare adecuados, considerando sus ingredientes, funciones y posibles efectos adversos, con el fin de personalizar rutinas según las necesidades específicas del usuario.
-
----
-
-## 🎯 **Objetivos Específicos**
 
 ### Análisis Exploratorio de Datos (EDA)
 
